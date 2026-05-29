@@ -1,0 +1,27 @@
+# Vibe Coding 项目规范
+
+## 技术栈
+- 前端：HTML/CSS/JavaScript，可使用 React/Vue 按需引入
+- 后端：Node.js + Express（优先）、Python + Flask（备选）
+- 包管理：npm
+- 版本控制：Git + GitHub
+
+## 编码规范
+- 使用 ES6+ 语法
+- 变量命名：camelCase
+- 文件名：kebab-case
+- 每个函数不超过 30 行
+- 优先使用 async/await 而不是 .then()
+- 代码注释使用中文
+
+## 常用命令
+- 启动项目：npm start
+- 开发模式：npm run dev
+- 安装依赖：npm install
+- 运行测试：npm test
+
+## Git 工作流
+- main 分支为稳定版本
+- 新功能从 main 切分支：feature/功能名
+- commit 信息格式：类型: 描述（类型：feat/fix/docs/style/refactor/test）
+- 推送前先 pull，避免冲突
