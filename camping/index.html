@@ -490,6 +490,8 @@ body{
 .budget-stats{display:flex;justify-content:space-between;font-size:12px;color:var(--text2);margin-top:4px}
 .budget-over{color:var(--red);font-weight:600}
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
 </head>
 <body>
 <div id="app">
@@ -501,6 +503,7 @@ body{
       <div class="header-sub" id="headerSub"></div>
     </div>
     <button class="btn-icon" onclick="exportData()" title="导出 JSON" style="font-size:18px">📤</button>
+    <div id="authArea" style="display:flex;align-items:center;gap:6px;margin-left:2px"></div>
     <div class="header-plan-dropdown" id="headerDropdown"></div>
     <div class="plan-dropdown-backdrop" id="headerDropdownBackdrop" onclick="closeHeaderDropdown()"></div>
   </header>
@@ -536,12 +539,233 @@ body{
 
 <script>
 /* ================================================================
+   SUPABASE INTEGRATION
+   ================================================================ */
+var supabase = (function(){ return window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey); })();
+var _supabaseReady = false;
+
+/* ----- Auth ----- */
+async function signInWithGitHub() {
+  var res = await supabase.auth.signInWithOAuth({ provider: 'github' });
+  if (res.error) console.error('登录失败:', res.error);
+}
+
+async function signOut() {
+  await supabase.auth.signOut();
+  _supabaseReady = false;
+  localStorage.removeItem('supabase_migrated');
+  location.reload();
+}
+
+async function getCurrentUser() {
+  var res = await supabase.auth.getUser();
+  return res.data ? res.data.user : null;
+}
+
+/* ----- Auth UI ----- */
+function renderAuthUI() {
+  supabase.auth.getSession().then(function(res) {
+    var area = document.getElementById('authArea');
+    if (!area) return;
+    if (res.data.session) {
+      var u = res.data.session.user;
+      var m = u.user_metadata || {};
+      var name = m.full_name || m.user_name || u.email || '用户';
+      var av = m.avatar_url || '';
+      var h = '';
+      if (av) h += '<img src="' + esc(av) + '" style="width:26px;height:26px;border-radius:50%;flex-shrink:0" onerror="this.style.display=\'none\'">';
+      h += '<span style="font-size:12px;font-weight:600;color:var(--text);max-width:72px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + esc(name) + '</span>';
+      h += '<button class="btn btn-xs btn-outline" style="padding:3px 8px;font-size:11px" onclick="signOut()">退出</button>';
+      area.innerHTML = h;
+    } else {
+      area.innerHTML = '<button class="btn btn-xs btn-primary" style="padding:4px 10px;font-size:12px;white-space:nowrap" onclick="signInWithGitHub()">GitHub 登录</button>';
+    }
+  });
+}
+
+/* ----- Auth State Listener ----- */
+supabase.auth.onAuthStateChange(function(event, session) {
+  if (event === 'SIGNED_IN') {
+    _supabaseReady = true;
+    migrateLocalDataToSupabase(session.user.id).then(function() {
+      return loadPlansFromSupabase();
+    }).then(function() {
+      return loadTemplatesFromSupabase();
+    }).then(function() {
+      if (typeof currentTab !== 'undefined') switchTab(currentTab);
+    }).catch(function(e) { console.error('SIGNED_IN handler error:', e); });
+  } else if (event === 'SIGNED_OUT') {
+    _supabaseReady = false;
+    location.reload();
+  }
+  renderAuthUI();
+});
+
+/* ----- Migration ----- */
+async function migrateLocalDataToSupabase(userId) {
+  if (localStorage.getItem('supabase_migrated')) return;
+  try {
+    var lp = JSON.parse(localStorage.getItem('camping_plans') || '[]');
+    for (var i = 0; i < lp.length; i++) {
+      var p = lp[i], info = p.info || {};
+      var row = {
+        user_id: userId,
+        name: info.name || p.name || '未命名',
+        date: info.date || '待定',
+        location: info.location || '待定',
+        families: p.families || [],
+        supplies: { familyGear: p.familyGear || {}, publicFood: p.publicFood || [], publicGear: p.publicGear || [], itinerary: p.itinerary || [], mapConfig: p.mapConfig || {} },
+        expenses: p.expenses || [],
+        tasks: p.tasks || [],
+        budget: p.budget || 0,
+        shopping_checked: p.shoppingChecked || {}
+      };
+      var r = await supabase.from('plans').insert(row).select();
+      if (r.data && r.data[0]) p._supabase_id = r.data[0].id;
+    }
+    if (lp.length > 0) localStorage.setItem('camping_plans', JSON.stringify(lp));
+
+    var lt = JSON.parse(localStorage.getItem('camping_gear_templates') || '[]');
+    for (var j = 0; j < lt.length; j++) {
+      await supabase.from('gear_templates').insert({
+        name: lt[j].name,
+        items: lt[j].categories || lt[j].items || []
+      });
+    }
+    localStorage.setItem('supabase_migrated', 'true');
+    console.log('数据迁移完成 (' + lp.length + ' plans, ' + lt.length + ' templates)');
+  } catch(e) { console.error('迁移失败:', e); }
+}
+
+/* ----- Load from Supabase ----- */
+async function loadPlansFromSupabase() {
+  var user = await getCurrentUser();
+  if (!user) return;
+  var r = await supabase.from('plans').select('*').eq('user_id', user.id).order('created_at', { ascending: false });
+  var plans = r.data || [];
+  if (plans.length > 0) {
+    var local = plans.map(function(p) {
+      var s = p.supplies || {};
+      return {
+        _supabase_id: p.id, name: p.name,
+        info: { name: p.name, date: p.date, location: p.location },
+        families: p.families || [],
+        familyGear: s.familyGear || {},
+        publicFood: s.publicFood || [],
+        publicGear: s.publicGear || [],
+        itinerary: s.itinerary || [],
+        mapConfig: s.mapConfig || { lng: 116.67, lat: 40.58, name: '北京怀柔白河湾' },
+        expenses: p.expenses || [],
+        tasks: p.tasks || [],
+        budget: p.budget || 0,
+        shoppingChecked: p.shopping_checked || {}
+      };
+    });
+    localStorage.setItem('camping_plans', JSON.stringify(local));
+    var active = parseInt(localStorage.getItem('camping_activePlan') || '0');
+    if (isNaN(active) || active >= local.length) localStorage.setItem('camping_activePlan', '0');
+  }
+}
+
+async function loadTemplatesFromSupabase() {
+  var r = await supabase.from('gear_templates').select('*').order('created_at', { ascending: false });
+  var tpls = r.data || [];
+  if (tpls.length > 0) {
+    var local = tpls.map(function(t) { return { _supabase_id: t.id, name: t.name, categories: t.items || [] }; });
+    localStorage.setItem('camping_gear_templates', JSON.stringify(local));
+  }
+}
+
+/* ----- Sync to Supabase (fire-and-forget from savePlans) ----- */
+async function _syncPlansToSupabase() {
+  if (!_supabaseReady) return;
+  var user = await getCurrentUser();
+  if (!user) return;
+  var plans = JSON.parse(localStorage.getItem('camping_plans') || '[]');
+  var r = await supabase.from('plans').select('id').eq('user_id', user.id);
+  var existingIds = (r.data || []).map(function(p) { return p.id; });
+
+  for (var i = 0; i < plans.length; i++) {
+    var p = plans[i], info = p.info || {};
+    var row = {
+      user_id: user.id, name: info.name || p.name || '未命名', date: info.date || '待定', location: info.location || '待定',
+      families: p.families || [],
+      supplies: { familyGear: p.familyGear || {}, publicFood: p.publicFood || [], publicGear: p.publicGear || [], itinerary: p.itinerary || [], mapConfig: p.mapConfig || {} },
+      expenses: p.expenses || [], tasks: p.tasks || [], budget: p.budget || 0, shopping_checked: p.shoppingChecked || {},
+      updated_at: new Date().toISOString()
+    };
+    if (p._supabase_id) {
+      await supabase.from('plans').update(row).eq('id', p._supabase_id);
+      var idx = existingIds.indexOf(p._supabase_id);
+      if (idx > -1) existingIds.splice(idx, 1);
+    } else {
+      var ins = await supabase.from('plans').insert(row).select();
+      if (ins.data && ins.data[0]) {
+        p._supabase_id = ins.data[0].id;
+        localStorage.setItem('camping_plans', JSON.stringify(plans));
+      }
+    }
+  }
+  for (var j = 0; j < existingIds.length; j++) {
+    await supabase.from('plans').delete().eq('id', existingIds[j]);
+  }
+}
+
+/* ----- Async API (direct Supabase access) ----- */
+async function fetchPlans() {
+  var user = await getCurrentUser();
+  if (!user) return [];
+  var r = await supabase.from('plans').select('*').eq('user_id', user.id).order('created_at', { ascending: false });
+  return r.data || [];
+}
+
+async function savePlan(plan) {
+  var user = await getCurrentUser();
+  if (!user) return null;
+  var info = plan.info || {};
+  var row = {
+    user_id: user.id, name: info.name || plan.name, date: info.date, location: info.location,
+    families: plan.families, supplies: { familyGear: plan.familyGear, publicFood: plan.publicFood, publicGear: plan.publicGear, itinerary: plan.itinerary, mapConfig: plan.mapConfig },
+    expenses: plan.expenses, tasks: plan.tasks, budget: plan.budget, shopping_checked: plan.shoppingChecked
+  };
+  if (plan.id || plan._supabase_id) {
+    row.updated_at = new Date().toISOString();
+    var r = await supabase.from('plans').update(row).eq('id', plan.id || plan._supabase_id).select();
+    return r.data ? r.data[0] : null;
+  } else {
+    var r = await supabase.from('plans').insert(row).select();
+    return r.data ? r.data[0] : null;
+  }
+}
+
+async function deletePlanFromSupabase(planId) {
+  await supabase.from('plans').delete().eq('id', planId);
+}
+
+async function fetchGearTemplates() {
+  var r = await supabase.from('gear_templates').select('*').order('created_at', { ascending: false });
+  return r.data || [];
+}
+
+async function saveGearTemplate(template) {
+  var r = await supabase.from('gear_templates').insert(template).select();
+  return r.data ? r.data[0] : null;
+}
+
+async function deleteGearTemplateFromSupabase(id) {
+  await supabase.from('gear_templates').delete().eq('id', id);
+}
+
+/* ================================================================
    DATA MODEL — MULTI-PLAN SUPPORT
    ================================================================ */
 function readPlans(){
   try{var v=localStorage.getItem('camping_plans');return v?JSON.parse(v):[]}catch(e){return[]}
 }
-function savePlans(plans){try{localStorage.setItem('camping_plans',JSON.stringify(plans))}catch(e){}}
+function savePlans(plans){
+  try{localStorage.setItem('camping_plans',JSON.stringify(plans))}catch(e){}
+  _syncPlansToSupabase().catch(function(e){console.error('Supabase sync:',e)});
+}
 function activePlanIdx(){
   var idx=parseInt(localStorage.getItem('camping_activePlan')||'0');if(isNaN(idx))idx=0;
   var plans=readPlans();if(idx>=plans.length)idx=0;return idx;
@@ -2123,6 +2347,19 @@ function copyShareText(){
   // Render home as default page
   switchTab('home');
 })();
+
+// Check Supabase session on load
+supabase.auth.getSession().then(function(res) {
+  if (res.data.session) {
+    _supabaseReady = true;
+    loadPlansFromSupabase().then(function() {
+      return loadTemplatesFromSupabase();
+    }).then(function() {
+      switchTab('home');
+    }).catch(function(e) { console.error(e); });
+  }
+  renderAuthUI();
+});
 
 /* ================================================================
    SHOPPING LIST
