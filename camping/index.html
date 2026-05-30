@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+XiaoWei&display=swap" rel="stylesheet">
 <style>
 /* ===== Reset ===== */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -28,20 +29,58 @@ body{
   display:flex;flex-direction:column;background:var(--bg);
   position:relative;overflow:hidden;box-shadow:var(--shadow-lg);
 }
+/* ===== Fixed Header ===== */
+#header{
+  display:none;flex-shrink:0;height:56px;align-items:center;gap:4px;
+  padding:0 8px;background:rgba(255,255,255,.96);z-index:500;
+  -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+}
+#header.show{display:flex}
+.btn-icon{
+  display:flex;align-items:center;justify-content:center;
+  width:40px;height:39px;padding:8px;border:none;background:none;
+  font-size:20px;color:var(--text2);cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+}
+.header-center{
+  flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center;
+  cursor:pointer;-webkit-tap-highlight-color:transparent;
+}
+.header-title{
+  font-family:'ZCOOL XiaoWei','Noto Sans SC',serif;
+  font-size:17px;font-weight:700;color:var(--text);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.header-sub{
+  font-size:12px;color:var(--text2);margin-top:1px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+/* ===== Plan Dropdown (in header) ===== */
+.header-plan-dropdown{
+  display:none;position:absolute;top:56px;left:8px;right:8px;
+  background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow-lg);
+  z-index:600;overflow:hidden;max-height:280px;overflow-y:auto;
+}
+.header-plan-dropdown.show{display:block}
 /* ===== Tab Bar ===== */
 #tabbar{
-  display:flex;flex-shrink:0;background:var(--card);border-top:1px solid var(--border);
-  padding-bottom:env(safe-area-inset-bottom,0);z-index:100;
+  position:sticky;bottom:0;display:flex;flex-shrink:0;
+  background:rgba(255,255,255,.96);
+  -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+  padding-bottom:env(safe-area-inset-bottom,0);z-index:500;height:72px;
 }
 .tab{
-  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
-  padding:9px 4px 7px;cursor:pointer;font-size:11px;font-weight:500;
-  color:var(--text3);transition:color .2s;user-select:none;
-  -webkit-tap-highlight-color:transparent;gap:1px;
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;
+  padding:8px 4px;cursor:pointer;font-size:11px;font-weight:400;
+  color:var(--text2);transition:color .18s;user-select:none;
+  -webkit-tap-highlight-color:transparent;gap:3px;position:relative;
 }
-.tab .tab-emoji{font-size:20px;line-height:1}
-.tab.active{color:var(--primary)}
-.tab.active .tab-emoji{font-size:21px}
+.tab .tab-emoji{font-size:22px;line-height:1}
+.tab.active{color:var(--primary);font-weight:700;letter-spacing:.02em}
+.tab.active::before{
+  content:'';position:absolute;top:0;left:25%;width:50%;height:2.5px;
+  background:var(--primary);border-radius:0 0 3px 3px;
+}
 /* ===== Content ===== */
 #content{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch}
 .panel{display:none;padding:0 16px 24px;min-height:100%}
@@ -234,36 +273,70 @@ body{
   flex:1;padding:9px 12px;border:1.5px solid var(--border);border-radius:var(--radius);
   font-size:13px;font-family:inherit;background:var(--card);color:var(--text);
 }
-.sup-progress{
+.sup-progress-pill{
+  display:inline-flex;align-items:center;padding:7px 14px;
+  background:var(--primary-light);border-radius:16px;
   font-size:13px;color:var(--primary);font-weight:600;white-space:nowrap;
+  border:1px solid rgba(200,101,26,.15);
+}
+.sup-divider{
+  height:1px;background:rgba(200,101,26,.15);margin:6px 0 10px;
 }
 .sup-cat-header{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:10px 14px;margin-bottom:6px;font-size:14px;font-weight:700;color:var(--text);
+  font-size:12px;color:var(--text3);font-weight:600;padding:4px 2px 2px;
+  text-transform:uppercase;letter-spacing:.5px;
 }
 .sup-item{
-  display:flex;align-items:center;gap:10px;padding:12px 14px;
-  background:var(--card);border-radius:var(--radius);margin-bottom:6px;
-  box-shadow:0 1px 3px rgba(0,0,0,.03);
+  display:flex;align-items:center;gap:8px;padding:10px 12px;
+  background:var(--card);border-radius:var(--radius);margin-bottom:4px;
+  box-shadow:0 1px 3px rgba(0,0,0,.03);transition:opacity .2s;
 }
+.sup-item.done{opacity:.55}
 .sup-item input[type=checkbox]{width:18px;height:18px;accent-color:var(--primary);flex-shrink:0}
-.sup-item .item-info{flex:1;min-width:0}
+.sup-item .item-info{flex:1;min-width:0;display:flex;align-items:center;gap:8px}
 .sup-item .item-name{font-size:14px;font-weight:500;color:var(--text)}
-.sup-item .item-name.done{text-decoration:line-through;color:var(--text3)}
-.sup-item .item-qty{font-size:12px;color:var(--text3);margin-top:1px}
+.sup-item .item-name.done-name{text-decoration:line-through;color:var(--text3)}
+.sup-item .item-qty{font-size:12px;color:var(--text3);white-space:nowrap}
 .sup-item .item-tag{
   display:inline-block;padding:2px 10px;background:var(--primary-light);
-  border-radius:10px;font-size:11px;color:var(--primary);font-weight:500;
+  border-radius:10px;font-size:11px;color:var(--primary);font-weight:500;flex-shrink:0;
+}
+.sup-item .item-status{
+  display:inline-block;padding:2px 8px;background:#e6f7e6;
+  border-radius:10px;font-size:11px;color:#2d8a2d;font-weight:500;flex-shrink:0;
 }
 .sup-item .item-actions{display:flex;gap:2px;flex-shrink:0}
-.sup-add-row{display:flex;gap:8px;margin-top:8px;align-items:center}
-.sup-add-row input{
-  flex:1;padding:9px 12px;border:1.5px dashed var(--border);border-radius:var(--radius);
-  font-size:13px;font-family:inherit;background:transparent;color:var(--text);
+/* FAB (Floating Action Button) */
+.sup-fab{
+  position:fixed;bottom:80px;right:20px;width:50px;height:50px;
+  border-radius:50%;background:var(--primary);color:#fff;border:none;
+  font-size:28px;cursor:pointer;box-shadow:0 4px 16px rgba(200,101,26,.35);
+  z-index:150;display:flex;align-items:center;justify-content:center;
+  transition:transform .15s,box-shadow .15s;line-height:1;
 }
-.sup-add-row input:focus{outline:none;border-color:var(--primary)}
-.sup-add-row select{padding:9px;border:1.5px solid var(--border);border-radius:var(--radius);
-  font-size:13px;font-family:inherit;background:var(--card);color:var(--text)}
+.sup-fab:active{transform:scale(.92);box-shadow:0 2px 8px rgba(200,101,26,.25)}
+/* Add Modal */
+.sup-modal-overlay{
+  display:none;position:fixed;top:0;left:0;right:0;bottom:0;
+  background:rgba(0,0,0,.4);z-index:200;align-items:center;justify-content:center;
+}
+.sup-modal-overlay.show{display:flex}
+.sup-modal{
+  background:var(--card);border-radius:var(--radius-lg);padding:20px;
+  width:calc(100% - 48px);max-width:380px;box-shadow:0 8px 32px rgba(0,0,0,.15);
+}
+.sup-modal h3{font-size:16px;margin:0 0 16px;color:var(--text)}
+.sup-modal .field{margin-bottom:12px}
+.sup-modal .field label{display:block;font-size:12px;color:var(--text3);margin-bottom:4px;font-weight:600}
+.sup-modal .field input,.sup-modal .field select{
+  width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:var(--radius);
+  font-size:14px;font-family:inherit;background:var(--bg);color:var(--text);box-sizing:border-box;
+}
+.sup-modal .field input:focus,.sup-modal .field select:focus{outline:none;border-color:var(--primary)}
+.sup-modal .modal-actions{display:flex;gap:8px;margin-top:16px}
+.sup-modal .modal-actions button{flex:1;padding:10px;border-radius:var(--radius);font-size:14px;font-weight:600;cursor:pointer}
+.sup-modal .modal-actions .btn-cancel{background:var(--card);border:1.5px solid var(--border);color:var(--text2)}
+.sup-modal .modal-actions .btn-confirm{background:var(--primary);border:none;color:#fff}
 /* ===== Expenses Panel ===== */
 .exp-summary{
   display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;
@@ -381,19 +454,56 @@ body{
 /* ===== Scrollbar ===== */
 #content::-webkit-scrollbar{width:4px}
 #content::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+/* ===== Shopping List Modal ===== */
+.shop-cat-title{font-size:13px;font-weight:700;color:var(--primary);padding:10px 0 6px;border-top:1px solid var(--border);margin-top:4px}
+.shop-cat-title:first-child{border-top:none;margin-top:0}
+.shop-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)}
+.shop-item:last-child{border-bottom:none}
+.shop-item input[type=checkbox]{width:18px;height:18px;accent-color:var(--primary);flex-shrink:0}
+.shop-item .shop-info{flex:1;min-width:0}
+.shop-item .shop-name{font-size:14px;font-weight:500;color:var(--text)}
+.shop-item .shop-name.done{text-decoration:line-through;color:var(--text3)}
+.shop-item .shop-meta{font-size:12px;color:var(--text3);margin-top:2px}
+.shop-item .shop-source{font-size:11px;color:var(--primary);background:var(--primary-light);padding:2px 8px;border-radius:8px;white-space:nowrap;flex-shrink:0}
+.shop-stats{text-align:center;padding:12px;font-size:14px;font-weight:600;color:var(--primary);border-top:1px solid var(--border);margin-top:8px}
+/* ===== Task Card ===== */
+.task-card .task-add-row{display:flex;gap:6px;margin-bottom:10px}
+.task-card .task-add-row input{flex:1;padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;background:var(--card);color:var(--text);min-width:0}
+.task-card .task-add-row input:focus{outline:none;border-color:var(--primary)}
+.task-card .task-add-row select{padding:8px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;background:var(--card);color:var(--text)}
+.task-item{display:flex;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid var(--border)}
+.task-item:last-child{border-bottom:none}
+.task-item input[type=checkbox]{width:17px;height:17px;accent-color:var(--primary);flex-shrink:0}
+.task-item .task-text{flex:1;font-size:14px;font-weight:500;color:var(--text)}
+.task-item .task-text.done{text-decoration:line-through;color:var(--text3)}
+.task-pill{display:inline-block;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:600;color:#fff;flex-shrink:0}
+/* ===== Budget ===== */
+.budget-section{margin-bottom:14px}
+.budget-input-row{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.budget-input-row input{flex:1;padding:9px 12px;border:1.5px solid var(--border);border-radius:var(--radius);font-size:14px;font-family:inherit;background:var(--card);color:var(--text)}
+.budget-input-row input:focus{outline:none;border-color:var(--primary)}
+.budget-bar-wrap{background:#eee;border-radius:8px;height:10px;overflow:hidden;margin-top:6px}
+.budget-bar{height:100%;border-radius:8px;transition:width .3s}
+.budget-bar.green{background:var(--green)}
+.budget-bar.yellow{background:#F0A500}
+.budget-bar.red{background:var(--red)}
+.budget-stats{display:flex;justify-content:space-between;font-size:12px;color:var(--text2);margin-top:4px}
+.budget-over{color:var(--red);font-weight:600}
 </style>
 </head>
 <body>
 <div id="app">
-  <!-- Tab Bar -->
-  <nav id="tabbar">
-    <div class="tab" data-tab="home"><span class="tab-emoji">🏠</span>首页</div>
-    <div class="tab" data-tab="overview"><span class="tab-emoji">🗺️</span>概况</div>
-    <div class="tab" data-tab="supplies"><span class="tab-emoji">📦</span>物资</div>
-    <div class="tab" data-tab="expenses"><span class="tab-emoji">💰</span>花费</div>
-    <div class="tab" data-tab="aa"><span class="tab-emoji">⚖️</span>AA</div>
-    <div class="tab" data-tab="share"><span class="tab-emoji">💬</span>分享</div>
-  </nav>
+  <!-- Fixed Header -->
+  <header id="header">
+    <button class="btn-icon" onclick="switchTab('home')" title="返回">←</button>
+    <div class="header-center" onclick="toggleHeaderDropdown()">
+      <div class="header-title" id="headerTitle">我的露营</div>
+      <div class="header-sub" id="headerSub"></div>
+    </div>
+    <button class="btn-icon" onclick="exportData()" title="导出 JSON" style="font-size:18px">📤</button>
+    <div class="header-plan-dropdown" id="headerDropdown"></div>
+    <div class="plan-dropdown-backdrop" id="headerDropdownBackdrop" onclick="closeHeaderDropdown()"></div>
+  </header>
   <main id="content">
     <!-- ===== HOME (保留但不在 TabBar 显示) ===== -->
     <div id="panel-home" class="panel"></div>
@@ -408,13 +518,19 @@ body{
     <!-- ===== SHARE ===== -->
     <div id="panel-share" class="panel"></div>
   </main>
+  <!-- Tab Bar -->
+  <nav id="tabbar">
+    <div class="tab" data-tab="overview"><span class="tab-emoji">🗺️</span>概况</div>
+    <div class="tab" data-tab="supplies"><span class="tab-emoji">📦</span>物资</div>
+    <div class="tab" data-tab="expenses"><span class="tab-emoji">💰</span>花费</div>
+    <div class="tab" data-tab="aa"><span class="tab-emoji">⚖️</span>AA</div>
+    <div class="tab" data-tab="share"><span class="tab-emoji">💬</span>分享</div>
+  </nav>
 </div>
 <!-- Modal -->
 <div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)closeModal()">
   <div class="modal-sheet" id="modalSheet"></div>
 </div>
-<!-- Plan Dropdown Backdrop -->
-<div class="plan-dropdown-backdrop" id="planDropdownBackdrop" onclick="closePlanDropdown()"></div>
 <!-- Toast -->
 <div class="toast" id="toast" style="display:none"></div>
 
@@ -437,6 +553,30 @@ function getActivePlan(){
 function saveActivePlan(plan){
   var plans=readPlans();var idx=activePlanIdx();
   if(idx<plans.length){plans[idx]=plan;savePlans(plans)}
+}
+
+function exportData(){
+  var plan=getActivePlan();
+  if(!plan){T('暂无数据可导出');return;}
+  var info=L('info',DEFAULT_INFO);
+  var families=L('families',DEFAULT_FAMILIES);
+  var expenses=L('expenses',[]);
+  var data={
+    plan:plan.name,
+    info:info,
+    families:families,
+    supplies:plan.supplies||{},
+    expenses:expenses,
+    exportedAt:new Date().toISOString()
+  };
+  var json=JSON.stringify(data,null,2);
+  var blob=new Blob([json],{type:'application/json'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');
+  a.href=url;a.download=(plan.name||'露营计划')+'.json';
+  document.body.appendChild(a);a.click();
+  document.body.removeChild(a);URL.revokeObjectURL(url);
+  T('已导出');
 }
 
 // L / S — now proxy through active plan
@@ -583,7 +723,10 @@ function makeDefaultPlan(name, info, families, familyGear, expenses, publicFood,
     publicFood:publicFood||[],
     publicGear:publicGear||[],
     itinerary:itinerary||[],
-    mapConfig:{lng:116.67,lat:40.58,name:'北京怀柔白河湾'}
+    mapConfig:{lng:116.67,lat:40.58,name:'北京怀柔白河湾'},
+    tasks:[],
+    budget:0,
+    shoppingChecked:{}
   };
 }
 
@@ -612,6 +755,8 @@ function switchPlan(idx){
   if(idx<0||idx>=plans.length)return;
   setActivePlanIdx(idx);
   weatherData=null;
+  // Update header
+  renderPlanHeader();
   // Refresh visible panels
   if(currentTab==='overview')renderOverview();
   else if(currentTab==='supplies'){renderSupplies();}
@@ -619,7 +764,6 @@ function switchPlan(idx){
   else if(currentTab==='aa')renderAA();
   else if(currentTab==='share')renderShare();
   else if(currentTab==='home')renderHome();
-  closePlanDropdown();
 }
 
 function deletePlan(idx){
@@ -640,47 +784,48 @@ function deletePlan(idx){
   else if(currentTab==='aa')renderAA();
   else if(currentTab==='share')renderShare();
   else if(currentTab==='home')renderHome();
-  closePlanDropdown();
   T('计划已删除');
 }
 
-function togglePlanDropdown(){
-  var dd=document.getElementById('planDropdown');
-  var bd=document.getElementById('planDropdownBackdrop');
-  var arr=document.querySelector('.dropdown-arrow');
-  if(dd.classList.contains('show')){
-    closePlanDropdown();
-  } else {
-    renderPlanDropdown();
-    dd.classList.add('show');
-    bd.classList.add('show');
-    if(arr)arr.classList.add('open');
-  }
+/* ===== HEADER ===== */
+function renderPlanHeader(){
+  var info=L('info',DEFAULT_INFO);
+  var plan=getActivePlan();
+  var planName=plan?plan.name:(info?info.name:'我的露营');
+  document.getElementById('headerTitle').textContent=planName;
+  var sub='';
+  if(info.date)sub+=info.date;
+  if(info.location)sub+=(sub?' · ':'')+info.location;
+  document.getElementById('headerSub').textContent=sub;
+  renderHeaderDropdown();
 }
-
-function closePlanDropdown(){
-  var dd=document.getElementById('planDropdown');
-  var bd=document.getElementById('planDropdownBackdrop');
-  var arr=document.querySelector('.dropdown-arrow');
-  if(dd)dd.classList.remove('show');
-  if(bd)bd.classList.remove('show');
-  if(arr)arr.classList.remove('open');
+function toggleHeaderDropdown(){
+  var dd=document.getElementById('headerDropdown');
+  var bd=document.getElementById('headerDropdownBackdrop');
+  var isOpen=dd.classList.contains('show');
+  if(isOpen){closeHeaderDropdown();return;}
+  renderHeaderDropdown();
+  dd.classList.add('show');
+  bd.classList.add('show');
 }
-
-function renderPlanDropdown(){
+function closeHeaderDropdown(){
+  document.getElementById('headerDropdown').classList.remove('show');
+  document.getElementById('headerDropdownBackdrop').classList.remove('show');
+}
+function renderHeaderDropdown(){
   var plans=readPlans();
   var active=activePlanIdx();
   var html='';
   plans.forEach(function(p,i){
-    html+='<div class="plan-dropdown-item'+(i===active?' active':'')+'" onclick="switchPlan('+i+')">';
+    html+='<div class="plan-dropdown-item'+(i===active?' active':'')+'" onclick="switchPlan('+i+');closeHeaderDropdown()">';
     html+='<span>'+(i===active?'<span class="plan-item-check">✓</span> ':'')+esc(p.name)+'</span>';
     if(plans.length>1){
       html+='<span class="plan-item-delete" onclick="event.stopPropagation();deletePlan('+i+')">×</span>';
     }
     html+='</div>';
   });
-  html+='<div class="plan-dropdown-add" onclick="newPlanModal();closePlanDropdown()">＋ 新建计划</div>';
-  document.getElementById('planDropdown').innerHTML=html;
+  html+='<div class="plan-dropdown-add" onclick="newPlanModal();closeHeaderDropdown()">＋ 新建计划</div>';
+  document.getElementById('headerDropdown').innerHTML=html;
 }
 
 /* ===== NAVIGATION ===== */
@@ -692,6 +837,12 @@ function switchTab(name){
   var panel=document.getElementById('panel-'+name);
   if(panel)panel.classList.add('active');
   document.getElementById('content').scrollTop=0;
+
+  // Header visibility
+  var header=document.getElementById('header');
+  if(name==='home'){header.classList.remove('show');}
+  else{header.classList.add('show');renderPlanHeader();}
+
   if(name==='home')renderHome();
   else if(name==='overview')renderOverview();
   else if(name==='supplies')renderSupplies();
@@ -960,17 +1111,8 @@ function renderOverview(){
 
   var html='';
 
-  // Plan header with dropdown
-  html+='<div class="ov-plan-header">';
-  html+='<div class="plan-switcher">';
-  html+='<div class="plan-switcher-trigger" onclick="togglePlanDropdown()">';
-  html+='<span class="plan-trigger-name">🏕️ '+esc(planName)+'</span>';
-  html+='<span class="dropdown-arrow">▼</span>';
-  html+='</div>';
-  html+='<div class="plan-dropdown" id="planDropdown"></div>';
-  html+='</div>';
-  html+='<button class="btn btn-xs btn-outline" onclick="editCampInfo()">编辑</button>';
-  html+='</div>';
+  // Edit button
+  html+='<div style="text-align:right;margin-bottom:10px"><button class="btn btn-xs btn-outline" onclick="editCampInfo()">编辑</button></div>';
 
   // Info Card
   html+='<div class="card"><div class="card-title">🏕️ 露营信息</div>';
@@ -1020,6 +1162,9 @@ function renderOverview(){
   });
   html+='<button class="btn btn-outline btn-block" style="margin-top:8px" onclick="addFamilyModal()">＋ 添加家庭</button>';
   html+='</div>';
+
+  // Tasks Card
+  html+=renderTasks();
 
   // Stats Bar
   html+='<div class="ov-stats-bar">';
@@ -1193,6 +1338,8 @@ function countAllSupplies(){
 /* ================================================================
    SUPPLIES
    ================================================================ */
+var supFamilyColors={'张旭家':'#C8651A','小明家':'#2E86AB','小红家':'#A61B6E'};
+
 function renderSupplies(){
   var families=L('families',DEFAULT_FAMILIES);
   var html='';
@@ -1204,7 +1351,10 @@ function renderSupplies(){
   html+='<div class="sup-subtab'+(suppliesSubtab==='gear'?' active':'')+'" onclick="switchSuppliesSub(\'gear\')">⛺ 公共物资</div>';
   html+='</div>';
 
-  // Filter
+  // Shopping list button
+  html+='<div style="margin-bottom:14px"><button class="btn btn-outline btn-block" onclick="generateShoppingList()">🛒 生成购物清单</button></div>';
+
+  // Filter + Progress pill
   html+='<div class="sup-filter-row">';
   html+='<select id="supFilter" onchange="suppliesFilter=this.value;renderSupplies()">';
   html+='<option value="all"'+(suppliesFilter==='all'?' selected':'')+'>👥 全部人员</option>';
@@ -1212,19 +1362,35 @@ function renderSupplies(){
     html+='<option value="'+esc(f.name)+'"'+(suppliesFilter===f.name?' selected':'')+'>🏕️ '+esc(f.name)+'</option>';
   });
   html+='</select>';
-  html+='<span class="sup-progress" id="supProgress"></span></div>';
+  html+='<span class="sup-progress-pill" id="supProgress"></span></div>';
 
   // Content
   html+='<div id="supContent"></div>';
 
+  // Category management link (only for family tab)
+  html+='<div id="supCatManage" style="margin-top:8px;display:none;text-align:right">';
+  html+='<span style="font-size:12px;color:var(--primary);cursor:pointer;font-weight:500" onclick="addCategoryModal()">＋ 管理分类</span></div>';
+
+  // Template buttons
+  html+='<div style="display:flex;gap:8px;margin-top:16px">';
+  html+='<button class="btn btn-outline btn-sm" style="flex:1" onclick="saveTemplateModal()">💾 保存为模板</button>';
+  html+='<button class="btn btn-outline btn-sm" style="flex:1" onclick="loadTemplateModal()">📂 加载模板</button>';
+  html+='</div>';
+
+  // FAB
+  var fabLabel=suppliesSubtab==='food'?'添加食材':suppliesSubtab==='gear'?'添加物资':'添加物品';
+  html+='<button class="sup-fab" onclick="openAddModal()" title="'+fabLabel+'">+</button>';
+
+  // Add modal container
+  html+='<div class="sup-modal-overlay" id="supModalOverlay" onclick="if(event.target===this)closeAddModal()">';
+  html+='<div class="sup-modal" id="supModal"></div></div>';
+
   document.getElementById('panel-supplies').innerHTML=html;
   renderSuppliesContent();
-
-  // Update progress
   setTimeout(updateSuppliesProgress,50);
 }
 
-function switchSuppliesSub(sub){suppliesSubtab=sub;renderSupplies();}
+function switchSuppliesSub(sub){suppliesFilter='all';suppliesSubtab=sub;renderSupplies();}
 
 function renderSuppliesContent(){
   var container=document.getElementById('supContent');
@@ -1235,247 +1401,293 @@ function renderSuppliesContent(){
     var fg=L('familyGear',DEFAULT_FAMILY_GEAR);
     var families=L('families',DEFAULT_FAMILIES);
 
-    // Collect all unique categories from all families
-    var allCats=[];
-    var catSeen={};
-    Object.values(fg).forEach(function(cats){
+    // Flatten: collect all items by category, across families
+    var catMap={};
+    Object.keys(fg).forEach(function(fam){
+      var cats=fg[fam]||[];
       cats.forEach(function(cat){
-        if(!catSeen[cat.cat]){catSeen[cat.cat]=true;allCats.push(cat.cat)}
+        if(!catMap[cat.cat])catMap[cat.cat]=[];
+        cat.items.forEach(function(item){
+          if(suppliesFilter!=='all'&&suppliesFilter!==fam)return;
+          catMap[cat.cat].push({family:fam,item:item});
+        });
       });
     });
 
-    // Category management bar
-    html+='<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:12px;padding:8px 12px;background:var(--card);border-radius:var(--radius);box-shadow:0 1px 3px rgba(0,0,0,.03)">';
-    html+='<span style="font-size:12px;color:var(--text3);margin-right:4px">分类：</span>';
-    allCats.forEach(function(cat){
-      html+='<span style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:var(--primary-light);border-radius:12px;font-size:12px;color:var(--primary);font-weight:500">'+esc(cat);
-      html+='<span style="cursor:pointer;font-size:14px;line-height:1;color:var(--text3)" onclick="deleteCategory(\''+esc(cat)+'\')" title="删除此分类">×</span></span>';
-    });
-    html+='<button class="btn btn-xs btn-outline" style="margin-left:auto" onclick="addCategoryModal()">+ 分类</button>';
-    html+='</div>';
-
-    families.forEach(function(f){
-      if(suppliesFilter!=='all'&&suppliesFilter!==f.name)return;
-      var cats=fg[f.name]||[];
-      cats.forEach(function(cat){
-        html+='<div class="sup-cat-header">'+esc(cat.cat)+' <span style="font-size:12px;color:var(--text3);font-weight:400">'+esc(f.name)+'</span></div>';
-        cat.items.forEach(function(item,i){
-          html+='<div class="sup-item">';
-          html+='<input type="checkbox" '+(item.checked?'checked':'')+' onchange="toggleFamilyItem(\''+esc(f.name)+'\',\''+esc(cat.cat)+'\','+i+',this.checked)">';
-          html+='<div class="item-info"><div class="item-name'+(item.checked?' done':'')+'">'+esc(item.name)+'</div></div>';
+    var catsOrder=Object.keys(catMap);
+    if(catsOrder.length===0){
+      html='<div style="text-align:center;padding:40px;color:var(--text3)">暂无物资，点击右下角 ＋ 添加</div>';
+    } else {
+      catsOrder.forEach(function(cat,ci){
+        if(ci>0)html+='<div class="sup-divider"></div>';
+        html+='<div class="sup-cat-header">'+esc(cat)+'</div>';
+        catMap[cat].forEach(function(entry){
+          var item=entry.item,fam=entry.family;
+          html+='<div class="sup-item'+(item.checked?' done':'')+'">';
+          html+='<input type="checkbox" '+(item.checked?'checked':'')+' onchange="toggleFamilyItemCheck(\''+esc(fam)+'\',\''+esc(cat)+'\',\''+esc(item.name)+'\',this.checked)">';
+          html+='<div class="item-info">';
+          html+='<span class="item-name'+(item.checked?' done-name':'')+'">'+esc(item.name)+'</span>';
+          if(item.qty)html+='<span class="item-qty">'+esc(item.qty)+'</span>';
+          html+='</div>';
+          html+='<span class="item-tag">'+esc(fam)+'</span>';
+          if(item.checked)html+='<span class="item-status">√已备</span>';
           html+='<div class="item-actions">';
-          html+='<button class="btn-icon" onclick="editSuppliesItem(\'family\',\''+esc(f.name)+'\',\''+esc(cat.cat)+'\','+i+')" title="编辑">✏️</button>';
-          html+='<button class="btn-icon danger" onclick="deleteSuppliesItem(\'family\',\''+esc(f.name)+'\',\''+esc(cat.cat)+'\','+i+')" title="删除">🗑️</button>';
+          html+='<button class="btn-icon" onclick="openEditModal(\'family\',\''+esc(fam)+'\',\''+esc(cat)+'\',\''+esc(item.name)+'\')" title="编辑">✏️</button>';
+          html+='<button class="btn-icon danger" onclick="deleteFamilyItemByName(\''+esc(fam)+'\',\''+esc(cat)+'\',\''+esc(item.name)+'\')" title="删除">🗑️</button>';
           html+='</div></div>';
         });
-        html+='<div class="sup-add-row">';
-        html+='<input type="text" id="supAdd_'+esc(f.name)+'_'+esc(cat.cat)+'" placeholder="添加物品...">';
-        html+='<button class="btn btn-primary btn-sm" onclick="addSuppliesItem(\'family\',\''+esc(f.name)+'\',\''+esc(cat.cat)+'\')">+ 添加</button></div>';
       });
-    });
-  } else if(suppliesSubtab==='food'){
-    var pf=L('publicFood',DEFAULT_PUBLIC_FOOD);
-    pf.forEach(function(cat){
-      html+='<div class="sup-cat-header">'+esc(cat.cat)+'</div>';
-      cat.items.forEach(function(item,i){
-        if(suppliesFilter!=='all'&&suppliesFilter!==item.assignee)return;
-        html+='<div class="sup-item">';
-        html+='<div class="item-info"><div class="item-name">'+esc(item.name)+'</div>';
-        html+='<div class="item-qty">数量: '+esc(item.qty)+'</div></div>';
-        html+='<span class="item-tag">'+esc(item.assignee)+'</span>';
-        html+='<div class="item-actions">';
-        html+='<button class="btn-icon" onclick="editFoodItem(\''+esc(cat.cat)+'\','+i+')">✏️</button>';
-        html+='<button class="btn-icon danger" onclick="deleteFoodItem(\''+esc(cat.cat)+'\','+i+')">🗑️</button>';
-        html+='</div></div>';
+    }
+
+  } else {
+    var list=suppliesSubtab==='food'?L('publicFood',DEFAULT_PUBLIC_FOOD):L('publicGear',DEFAULT_PUBLIC_GEAR);
+
+    if(list.length===0){
+      html='<div style="text-align:center;padding:40px;color:var(--text3)">暂无物资，点击右下角 ＋ 添加</div>';
+    } else {
+      list.forEach(function(cat,ci){
+        html+='<div class="sup-cat-header">'+esc(cat.cat)+'</div>';
+        cat.items.forEach(function(item,i){
+          if(suppliesFilter!=='all'&&suppliesFilter!==item.assignee)return;
+          html+='<div class="sup-item'+(item.checked?' done':'')+'">';
+          html+='<input type="checkbox" '+(item.checked?'checked':'')+' onchange="togglePublicItemCheck('+ci+','+i+',this.checked)">';
+          html+='<div class="item-info">';
+          html+='<span class="item-name'+(item.checked?' done-name':'')+'">'+esc(item.name)+'</span>';
+          if(item.qty)html+='<span class="item-qty">'+esc(item.qty)+'</span>';
+          html+='</div>';
+          html+='<span class="item-tag">'+esc(item.assignee)+'</span>';
+          if(item.checked)html+='<span class="item-status">√已备</span>';
+          html+='<div class="item-actions">';
+          html+='<button class="btn-icon" onclick="openEditModal(\'public\','+ci+','+i+')" title="编辑">✏️</button>';
+          html+='<button class="btn-icon danger" onclick="deletePublicItem('+ci+','+i+')" title="删除">🗑️</button>';
+          html+='</div></div>';
+        });
+        if(ci<list.length-1)html+='<div class="sup-divider"></div>';
       });
-      html+='<div class="sup-add-row">';
-      html+='<input type="text" id="supFoodName_'+esc(cat.cat)+'" placeholder="食材名称">';
-      html+='<input type="text" id="supFoodQty_'+esc(cat.cat)+'" placeholder="数量" style="width:90px">';
-      html+='<select id="supFoodAsn_'+esc(cat.cat)+'">';
-      var families1=L('families',DEFAULT_FAMILIES);
-      families1.forEach(function(f){
-        html+='<option value="'+esc(f.name)+'">'+esc(f.name)+'</option>';
-      });
-      html+='</select>';
-      html+='<button class="btn btn-primary btn-sm" onclick="addFoodItem(\''+esc(cat.cat)+'\')">+</button></div>';
-    });
-  } else if(suppliesSubtab==='gear'){
-    var pg=L('publicGear',DEFAULT_PUBLIC_GEAR);
-    pg.forEach(function(cat){
-      html+='<div class="sup-cat-header">'+esc(cat.cat)+'</div>';
-      cat.items.forEach(function(item,i){
-        if(suppliesFilter!=='all'&&suppliesFilter!==item.assignee)return;
-        html+='<div class="sup-item">';
-        html+='<div class="item-info"><div class="item-name">'+esc(item.name)+'</div>';
-        html+='<div class="item-qty">数量: '+esc(item.qty)+'</div></div>';
-        html+='<span class="item-tag">'+esc(item.assignee)+'</span>';
-        html+='<div class="item-actions">';
-        html+='<button class="btn-icon" onclick="editGearItem(\''+esc(cat.cat)+'\','+i+')">✏️</button>';
-        html+='<button class="btn-icon danger" onclick="deleteGearItem(\''+esc(cat.cat)+'\','+i+')">🗑️</button>';
-        html+='</div></div>';
-      });
-      html+='<div class="sup-add-row">';
-      html+='<input type="text" id="supGearName_'+esc(cat.cat)+'" placeholder="物品名称">';
-      html+='<input type="text" id="supGearQty_'+esc(cat.cat)+'" placeholder="数量" style="width:90px">';
-      html+='<select id="supGearAsn_'+esc(cat.cat)+'">';
-      var families2=L('families',DEFAULT_FAMILIES);
-      families2.forEach(function(f){
-        html+='<option value="'+esc(f.name)+'">'+esc(f.name)+'</option>';
-      });
-      html+='</select>';
-      html+='<button class="btn btn-primary btn-sm" onclick="addGearItem(\''+esc(cat.cat)+'\')">+</button></div>';
-    });
+    }
   }
 
-  container.innerHTML=html||'<div style="text-align:center;padding:40px;color:var(--text3)">暂无物资，点击下方按钮添加</div>';
+  container.innerHTML=html||'<div style="text-align:center;padding:40px;color:var(--text3)">暂无物资，点击右下角 ＋ 添加</div>';
+  // Show/hide category management
+  var cm=document.getElementById('supCatManage');
+  if(cm)cm.style.display=suppliesSubtab==='family'?'block':'none';
 }
 
 function updateSuppliesProgress(){
   var el=document.getElementById('supProgress');if(!el)return;
-  var total=0,checked=0;
   if(suppliesSubtab==='family'){
+    el.style.display='inline-flex';
+    var total=0,checked=0;
     var fg=L('familyGear',DEFAULT_FAMILY_GEAR);
     Object.values(fg).forEach(function(cats){
       cats.forEach(function(cat){
-        cat.items.forEach(function(item){
-          total++;if(item.checked)checked++;
-        });
+        cat.items.forEach(function(item){total++;if(item.checked)checked++;});
       });
     });
+    el.textContent=checked+'/'+total+' 已备';
   } else {
-    el.textContent='';return;
+    var key=suppliesSubtab==='food'?'publicFood':'publicGear';
+    var list=L(key,suppliesSubtab==='food'?DEFAULT_PUBLIC_FOOD:DEFAULT_PUBLIC_GEAR);
+    var total=0,checked=0;
+    list.forEach(function(cat){
+      cat.items.forEach(function(item){total++;if(item.checked)checked++;});
+    });
+    if(total>0){el.style.display='inline-flex';el.textContent=checked+'/'+total+' 已备'}
+    else{el.style.display='none'}
   }
-  el.textContent=checked+'/'+total+' 已备';
 }
 
-function toggleFamilyItem(fam,cat,idx,checked){
+function toggleFamilyItemCheck(fam,cat,name,checked){
   var fg=L('familyGear',DEFAULT_FAMILY_GEAR);
   if(fg[fam]){
     var catObj=fg[fam].find(function(c){return c.cat===cat});
-    if(catObj&&catObj.items[idx]){catObj.items[idx].checked=checked;S('familyGear',fg)}
+    if(catObj){
+      var item=catObj.items.find(function(it){return it.name===name});
+      if(item){item.checked=checked;S('familyGear',fg)}
+    }
   }
   renderSuppliesContent();updateSuppliesProgress();
 }
 
-function addSuppliesItem(type,fam,cat){
-  var key='supAdd_'+fam+'_'+cat;
-  var name=document.getElementById(key).value.trim();
-  if(!name)return;
-  if(type==='family'){
-    var fg=L('familyGear',DEFAULT_FAMILY_GEAR);
-    if(!fg[fam])fg[fam]=[];
+function deleteFamilyItemByName(fam,cat,name){
+  var fg=L('familyGear',DEFAULT_FAMILY_GEAR);
+  if(fg[fam]){
     var catObj=fg[fam].find(function(c){return c.cat===cat});
-    if(!catObj){catObj={cat:cat,items:[]};fg[fam].push(catObj)}
-    catObj.items.push({name:name,checked:false});
-    S('familyGear',fg);
-  }
-  renderSuppliesContent();updateSuppliesProgress();document.getElementById(key).value='';
-}
-
-function deleteSuppliesItem(type,fam,cat,idx){
-  if(type==='family'){
-    var fg=L('familyGear',DEFAULT_FAMILY_GEAR);
-    if(fg[fam]){
-      var catObj=fg[fam].find(function(c){return c.cat===cat});
-      if(catObj){catObj.items.splice(idx,1);S('familyGear',fg)}
+    if(catObj){
+      catObj.items=catObj.items.filter(function(it){return it.name!==name});
+      S('familyGear',fg)
     }
   }
   renderSuppliesContent();updateSuppliesProgress();renderOverview();
 }
 
-function editSuppliesItem(type,fam,cat,idx){
-  if(type==='family'){
+function deletePublicItem(ci,ii){
+  var key=suppliesSubtab==='food'?'publicFood':'publicGear';
+  var list=L(key,suppliesSubtab==='food'?DEFAULT_PUBLIC_FOOD:DEFAULT_PUBLIC_GEAR);
+  list[ci].items.splice(ii,1);
+  S(key,list);renderSuppliesContent();renderOverview();
+}
+
+function togglePublicItemCheck(ci,ii,checked){
+  var key=suppliesSubtab==='food'?'publicFood':'publicGear';
+  var list=L(key,suppliesSubtab==='food'?DEFAULT_PUBLIC_FOOD:DEFAULT_PUBLIC_GEAR);
+  if(list[ci]&&list[ci].items[ii]){list[ci].items[ii].checked=checked;S(key,list)}
+  renderSuppliesContent();updateSuppliesProgress();
+}
+
+/* ===== Modal: Add Item ===== */
+function openAddModal(){
+  var families=L('families',DEFAULT_FAMILIES);
+  var overlay=document.getElementById('supModalOverlay');
+  var modal=document.getElementById('supModal');
+
+  if(suppliesSubtab==='family'){
     var fg=L('familyGear',DEFAULT_FAMILY_GEAR);
-    var item=fg[fam].find(function(c){return c.cat===cat}).items[idx];
-    var html=modalField('物品名称','<input id="mEditName" value="'+esc(item.name)+'">');
-    html+='<div class="modal-actions"><button class="btn btn-outline" onclick="closeModal()">取消</button>';
-    html+='<button class="btn btn-primary" onclick="saveEditFamilyItem(\''+esc(fam)+'\',\''+esc(cat)+'\','+idx+')">保存</button></div>';
-    openModal('编辑物品',html);
+    var allCats=[];var seen={};
+    Object.values(fg).forEach(function(cats){
+      cats.forEach(function(c){if(!seen[c.cat]){seen[c.cat]=true;allCats.push(c.cat)}});
+    });
+    if(allCats.length===0)allCats=['睡眠装备'];
+
+    var html='<h3>添加物品</h3>';
+    html+='<div class="field"><label>物品名称</label><input id="supAddName" placeholder="例：四季帐篷"></div>';
+    html+='<div class="field"><label>数量</label><input id="supAddQty" placeholder="例：1顶"></div>';
+    html+='<div class="field"><label>分类</label><select id="supAddCat">';
+    allCats.forEach(function(c){html+='<option value="'+esc(c)+'">'+esc(c)+'</option>'});
+    html+='</select></div>';
+    html+='<div class="field"><label>负责人</label><select id="supAddFam">';
+    families.forEach(function(f){html+='<option value="'+esc(f.name)+'">'+esc(f.name)+'</option>'});
+    html+='</select></div>';
+    html+='<div class="modal-actions"><button class="btn-cancel" onclick="closeAddModal()">取消</button>';
+    html+='<button class="btn-confirm" onclick="saveNewFamilyItem()">添加物品</button></div>';
+    modal.innerHTML=html;
+    overlay.classList.add('show');
+
+  } else {
+    var catList=suppliesSubtab==='food'?L('publicFood',DEFAULT_PUBLIC_FOOD):L('publicGear',DEFAULT_PUBLIC_GEAR);
+    var catNames=catList.map(function(c){return c.cat});
+    if(catNames.length===0)catNames=['默认分类'];
+
+    var label=suppliesSubtab==='food'?'食材':'物资';
+    var html='<h3>添加'+label+'</h3>';
+    html+='<div class="field"><label>名称</label><input id="supAddName" placeholder="例：牛肋条"></div>';
+    html+='<div class="field"><label>数量</label><input id="supAddQty" placeholder="例：2斤"></div>';
+    html+='<div class="field"><label>分类</label><select id="supAddCat">';
+    catNames.forEach(function(c){html+='<option value="'+esc(c)+'">'+esc(c)+'</option>'});
+    html+='<option value="__new__">+ 新建分类</option></select></div>';
+    html+='<div class="field"><label>负责人</label><select id="supAddFam">';
+    families.forEach(function(f){html+='<option value="'+esc(f.name)+'">'+esc(f.name)+'</option>'});
+    html+='</select></div>';
+    html+='<div class="modal-actions"><button class="btn-cancel" onclick="closeAddModal()">取消</button>';
+    html+='<button class="btn-confirm" onclick="saveNewPublicItem()">添加</button></div>';
+    modal.innerHTML=html;
+    overlay.classList.add('show');
   }
 }
-function saveEditFamilyItem(fam,cat,idx){
+
+function closeAddModal(){
+  document.getElementById('supModalOverlay').classList.remove('show');
+}
+
+function saveNewFamilyItem(){
+  var name=document.getElementById('supAddName').value.trim();
+  var qty=document.getElementById('supAddQty').value.trim();
+  var cat=document.getElementById('supAddCat').value;
+  var fam=document.getElementById('supAddFam').value;
+  if(!name)return;
+
   var fg=L('familyGear',DEFAULT_FAMILY_GEAR);
-  fg[fam].find(function(c){return c.cat===cat}).items[idx].name=document.getElementById('mEditName').value.trim();
-  S('familyGear',fg);closeModal();renderSuppliesContent();
+  if(!fg[fam])fg[fam]=[];
+  var catObj=fg[fam].find(function(c){return c.cat===cat});
+  if(!catObj){catObj={cat:cat,items:[]};fg[fam].push(catObj)}
+  catObj.items.push({name:name,qty:qty,checked:false});
+  S('familyGear',fg);
+  closeAddModal();renderSuppliesContent();updateSuppliesProgress();renderOverview();
 }
 
-function addFoodItem(cat){
-  var name=document.getElementById('supFoodName_'+cat).value.trim();
-  var qty=document.getElementById('supFoodQty_'+cat).value.trim();
-  var asn=document.getElementById('supFoodAsn_'+cat).value;
+function saveNewPublicItem(){
+  var name=document.getElementById('supAddName').value.trim();
+  var qty=document.getElementById('supAddQty').value.trim();
+  var cat=document.getElementById('supAddCat').value;
+  var fam=document.getElementById('supAddFam').value;
   if(!name||!qty)return;
-  var pf=L('publicFood',DEFAULT_PUBLIC_FOOD);
-  var catObj=pf.find(function(c){return c.cat===cat});
-  if(!catObj){catObj={cat:cat,items:[]};pf.push(catObj)}
-  catObj.items.push({name:name,qty:qty,assignee:asn});
-  S('publicFood',pf);
-  renderSuppliesContent();renderOverview();
-  document.getElementById('supFoodName_'+cat).value='';
-  document.getElementById('supFoodQty_'+cat).value='';
+
+  var key=suppliesSubtab==='food'?'publicFood':'publicGear';
+  var list=L(key,suppliesSubtab==='food'?DEFAULT_PUBLIC_FOOD:DEFAULT_PUBLIC_GEAR);
+
+  // Handle new category
+  if(cat==='__new__'){
+    cat=name+'类';
+  }
+
+  var catObj=list.find(function(c){return c.cat===cat});
+  if(!catObj){catObj={cat:cat,items:[]};list.push(catObj)}
+  catObj.items.push({name:name,qty:qty,assignee:fam});
+  S(key,list);
+  closeAddModal();renderSuppliesContent();renderOverview();
 }
 
-function editFoodItem(cat,idx){
-  var pf=L('publicFood',DEFAULT_PUBLIC_FOOD);
-  var item=pf.find(function(c){return c.cat===cat}).items[idx];
+/* ===== Modal: Edit Item ===== */
+function openEditModal(type,arg1,arg2,arg3){
   var families=L('families',DEFAULT_FAMILIES);
-  var html=modalField('食材名称','<input id="mFoodName" value="'+esc(item.name)+'">');
-  html+=modalField('数量','<input id="mFoodQty" value="'+esc(item.qty)+'">');
-  html+=modalField('负责人','<select id="mFoodAsn">'+families.map(function(f){return '<option value="'+esc(f.name)+'"'+(f.name===item.assignee?' selected':'')+'>'+esc(f.name)+'</option>'}).join('')+'</select>');
-  html+='<div class="modal-actions"><button class="btn btn-outline" onclick="closeModal()">取消</button>';
-  html+='<button class="btn btn-primary" onclick="saveEditFoodItem(\''+esc(cat)+'\','+idx+')">保存</button></div>';
-  openModal('编辑食材',html);
-}
-function saveEditFoodItem(cat,idx){
-  var pf=L('publicFood',DEFAULT_PUBLIC_FOOD);
-  var item=pf.find(function(c){return c.cat===cat}).items[idx];
-  item.name=document.getElementById('mFoodName').value.trim();
-  item.qty=document.getElementById('mFoodQty').value.trim();
-  item.assignee=document.getElementById('mFoodAsn').value;
-  S('publicFood',pf);closeModal();renderSuppliesContent();
-}
-function deleteFoodItem(cat,idx){
-  var pf=L('publicFood',DEFAULT_PUBLIC_FOOD);
-  pf.find(function(c){return c.cat===cat}).items.splice(idx,1);
-  S('publicFood',pf);renderSuppliesContent();renderOverview();
+  var overlay=document.getElementById('supModalOverlay');
+  var modal=document.getElementById('supModal');
+
+  if(type==='family'){
+    // arg1=fam, arg2=cat, arg3=itemName
+    var fam=arg1,cat=arg2,itemName=arg3;
+    var fg=L('familyGear',DEFAULT_FAMILY_GEAR);
+    var item=fg[fam].find(function(c){return c.cat===cat}).items.find(function(it){return it.name===itemName});
+
+    var html='<h3>编辑物品</h3>';
+    html+='<div class="field"><label>物品名称</label><input id="supEditName" value="'+esc(item.name)+'"></div>';
+    html+='<div class="field"><label>数量</label><input id="supEditQty" value="'+esc(item.qty||'')+'"></div>';
+    html+='<div class="modal-actions"><button class="btn-cancel" onclick="closeAddModal()">取消</button>';
+    html+='<button class="btn-confirm" onclick="saveEditFamilyItem(\''+esc(fam)+'\',\''+esc(cat)+'\',\''+esc(itemName)+'\')">保存</button></div>';
+    modal.innerHTML=html;
+    overlay.classList.add('show');
+
+  } else if(type==='public'){
+    // arg1=catIdx, arg2=itemIdx
+    var ci=arg1,ii=arg2;
+    var key=suppliesSubtab==='food'?'publicFood':'publicGear';
+    var list=L(key,suppliesSubtab==='food'?DEFAULT_PUBLIC_FOOD:DEFAULT_PUBLIC_GEAR);
+    var item=list[ci].items[ii];
+
+    var html='<h3>编辑</h3>';
+    html+='<div class="field"><label>名称</label><input id="supEditName" value="'+esc(item.name)+'"></div>';
+    html+='<div class="field"><label>数量</label><input id="supEditQty" value="'+esc(item.qty||'')+'"></div>';
+    html+='<div class="field"><label>负责人</label><select id="supEditFam">';
+    families.forEach(function(f){html+='<option value="'+esc(f.name)+'"'+(f.name===item.assignee?' selected':'')+'>'+esc(f.name)+'</option>'});
+    html+='</select></div>';
+    html+='<div class="modal-actions"><button class="btn-cancel" onclick="closeAddModal()">取消</button>';
+    html+='<button class="btn-confirm" onclick="saveEditPublicItem('+ci+','+ii+')">保存</button></div>';
+    modal.innerHTML=html;
+    overlay.classList.add('show');
+  }
 }
 
-function addGearItem(cat){
-  var name=document.getElementById('supGearName_'+cat).value.trim();
-  var qty=document.getElementById('supGearQty_'+cat).value.trim();
-  var asn=document.getElementById('supGearAsn_'+cat).value;
-  if(!name||!qty)return;
-  var pg=L('publicGear',DEFAULT_PUBLIC_GEAR);
-  var catObj=pg.find(function(c){return c.cat===cat});
-  if(!catObj){catObj={cat:cat,items:[]};pg.push(catObj)}
-  catObj.items.push({name:name,qty:qty,assignee:asn});
-  S('publicGear',pg);
-  renderSuppliesContent();renderOverview();
-  document.getElementById('supGearName_'+cat).value='';
-  document.getElementById('supGearQty_'+cat).value='';
+function saveEditFamilyItem(fam,cat,oldName){
+  var newName=document.getElementById('supEditName').value.trim();
+  var newQty=document.getElementById('supEditQty').value.trim();
+  if(!newName)return;
+  var fg=L('familyGear',DEFAULT_FAMILY_GEAR);
+  var item=fg[fam].find(function(c){return c.cat===cat}).items.find(function(it){return it.name===oldName});
+  if(item){item.name=newName;item.qty=newQty;S('familyGear',fg)}
+  closeAddModal();renderSuppliesContent();updateSuppliesProgress();
 }
-function editGearItem(cat,idx){
-  var pg=L('publicGear',DEFAULT_PUBLIC_GEAR);
-  var item=pg.find(function(c){return c.cat===cat}).items[idx];
-  var families=L('families',DEFAULT_FAMILIES);
-  var html=modalField('物品名称','<input id="mGearName" value="'+esc(item.name)+'">');
-  html+=modalField('数量','<input id="mGearQty" value="'+esc(item.qty)+'">');
-  html+=modalField('负责人','<select id="mGearAsn">'+families.map(function(f){return '<option value="'+esc(f.name)+'"'+(f.name===item.assignee?' selected':'')+'>'+esc(f.name)+'</option>'}).join('')+'</select>');
-  html+='<div class="modal-actions"><button class="btn btn-outline" onclick="closeModal()">取消</button>';
-  html+='<button class="btn btn-primary" onclick="saveEditGearItem(\''+esc(cat)+'\','+idx+')">保存</button></div>';
-  openModal('编辑公共物资',html);
-}
-function saveEditGearItem(cat,idx){
-  var pg=L('publicGear',DEFAULT_PUBLIC_GEAR);
-  var item=pg.find(function(c){return c.cat===cat}).items[idx];
-  item.name=document.getElementById('mGearName').value.trim();
-  item.qty=document.getElementById('mGearQty').value.trim();
-  item.assignee=document.getElementById('mGearAsn').value;
-  S('publicGear',pg);closeModal();renderSuppliesContent();
-}
-function deleteGearItem(cat,idx){
-  var pg=L('publicGear',DEFAULT_PUBLIC_GEAR);
-  pg.find(function(c){return c.cat===cat}).items.splice(idx,1);
-  S('publicGear',pg);renderSuppliesContent();renderOverview();
+
+function saveEditPublicItem(ci,ii){
+  var newName=document.getElementById('supEditName').value.trim();
+  var newQty=document.getElementById('supEditQty').value.trim();
+  var newFam=document.getElementById('supEditFam').value;
+  if(!newName)return;
+  var key=suppliesSubtab==='food'?'publicFood':'publicGear';
+  var list=L(key,suppliesSubtab==='food'?DEFAULT_PUBLIC_FOOD:DEFAULT_PUBLIC_GEAR);
+  var item=list[ci].items[ii];
+  item.name=newName;item.qty=newQty;item.assignee=newFam;
+  S(key,list);
+  closeAddModal();renderSuppliesContent();
 }
 
 /* ===== Category Management ===== */
@@ -1494,7 +1706,6 @@ function saveNewCategory(){
   var families=plan.families||[];
   families.forEach(function(f){
     var cats=plan.familyGear[f.name]||[];
-    // Check if category already exists for this family
     if(!cats.some(function(c){return c.cat===catName})){
       cats.push({cat:catName,items:[]});
     }
@@ -1521,15 +1732,37 @@ function deleteCategory(catName){
    EXPENSES
    ================================================================ */
 function renderExpenses(){
+  var plan=getActivePlan();
   var expenses=L('expenses',DEFAULT_EXPENSES);
   var families=L('families',DEFAULT_FAMILIES);
   var html='';
 
-  // Summary
+  // Compute totals first
   var totalAll=0,totalAA=0;
   expenses.forEach(function(e){totalAll+=e.amount;if(e.inAA)totalAA+=e.amount});
   var perFamily=totalAA/families.length;
 
+  // Budget
+  var budget=plan?plan.budget||0:0;
+  html+='<div class="budget-section card">';
+  if(budget>0){
+    var pct=totalAll/budget*100;
+    var barClass=pct>100?'red':pct>=80?'yellow':'green';
+    html+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">';
+    html+='<span style="font-size:13px;font-weight:600">💰 预算 ¥'+budget.toFixed(0)+'</span>';
+    html+='<button class="btn btn-xs btn-outline" onclick="setBudget()">修改</button></div>';
+    html+='<div class="budget-bar-wrap"><div class="budget-bar '+barClass+'" style="width:'+Math.min(pct,100)+'%"></div></div>';
+    html+='<div class="budget-stats"><span>已花 ¥'+totalAll.toFixed(0)+'（'+pct.toFixed(0)+'%）</span>';
+    if(pct>100)html+='<span class="budget-over">超支 ¥'+(totalAll-budget).toFixed(0)+'</span>';
+    html+='</div>';
+  } else {
+    html+='<div style="display:flex;align-items:center;justify-content:space-between">';
+    html+='<span style="font-size:13px;color:var(--text3)">💰 未设置预算</span>';
+    html+='<button class="btn btn-xs btn-outline" onclick="setBudget()">设置</button></div>';
+  }
+  html+='</div>';
+
+  // Summary
   html+='<div class="exp-summary">';
   html+='<div class="exp-sum-card"><div class="sum-num">&yen;'+totalAll.toFixed(0)+'</div><div class="sum-label">总花费</div></div>';
   html+='<div class="exp-sum-card"><div class="sum-num">&yen;'+totalAA.toFixed(0)+'</div><div class="sum-label">计入AA</div></div>';
@@ -1890,6 +2123,310 @@ function copyShareText(){
   // Render home as default page
   switchTab('home');
 })();
+
+/* ================================================================
+   SHOPPING LIST
+   ================================================================ */
+function generateShoppingList(){
+  var plan=getActivePlan();if(!plan)return;
+  var fg=plan.familyGear||{};
+  var pf=plan.publicFood||[];
+  var pg=plan.publicGear||[];
+
+  var items=[];
+  Object.keys(fg).forEach(function(fam){
+    (fg[fam]||[]).forEach(function(cat){
+      cat.items.forEach(function(item){
+        if(!item.checked)items.push({name:item.name,qty:item.qty||'1',source:fam+' 自带',cat:cat.cat});
+      });
+    });
+  });
+  pf.forEach(function(cat){
+    cat.items.forEach(function(item){
+      if(!item.checked)items.push({name:item.name,qty:item.qty||'1',source:'公共食材',cat:cat.cat});
+    });
+  });
+  pg.forEach(function(cat){
+    cat.items.forEach(function(item){
+      if(!item.checked)items.push({name:item.name,qty:item.qty||'1',source:'公共装备',cat:cat.cat});
+    });
+  });
+
+  if(items.length===0){T('所有物品已备齐，无需购物');return;}
+
+  if(!plan.shoppingChecked)plan.shoppingChecked={};
+  var sc=plan.shoppingChecked;
+
+  var grouped={};
+  items.forEach(function(it){
+    var key=it.cat+'|||'+it.name;
+    if(!grouped[key]){grouped[key]={name:it.name,cat:it.cat,sources:[],qtyStr:''};}
+    if(grouped[key].sources.indexOf(it.source)===-1)grouped[key].sources.push(it.source);
+    if(it.qty)grouped[key].qtyStr=it.qty;
+  });
+
+  var cats={};
+  Object.values(grouped).forEach(function(g){
+    if(!cats[g.cat])cats[g.cat]=[];
+    cats[g.cat].push(g);
+  });
+
+  var html='';
+  var totalItems=0,totalChecked=0;
+  Object.keys(cats).forEach(function(catName){
+    html+='<div class="shop-cat-title">📌 '+esc(catName)+'</div>';
+    cats[catName].forEach(function(g){
+      var itemKey=g.cat+'_'+g.name;
+      var isChecked=sc[itemKey];
+      totalItems++;if(isChecked)totalChecked++;
+      html+='<div class="shop-item">';
+      html+='<input type="checkbox" '+(isChecked?'checked':'')+' onchange="toggleShoppingItem(\''+esc(itemKey)+'\',this.checked)">';
+      html+='<div class="shop-info"><div class="shop-name'+(isChecked?' done':'')+'">'+esc(g.name)+'</div>';
+      html+='<div class="shop-meta">'+esc(g.qtyStr)+'</div></div>';
+      html+='<span class="shop-source">'+esc(g.sources.join('、'))+'</span>';
+      html+='</div>';
+    });
+  });
+
+  html+='<div class="shop-stats">已购 '+totalChecked+'/'+totalItems+' 项</div>';
+  openModal('🛒 购物清单',html);
+}
+
+function toggleShoppingItem(key,checked){
+  var plan=getActivePlan();if(!plan)return;
+  if(!plan.shoppingChecked)plan.shoppingChecked={};
+  plan.shoppingChecked[key]=checked;
+  saveActivePlan(plan);
+  generateShoppingList();
+}
+
+/* ================================================================
+   TASKS
+   ================================================================ */
+function renderTasks(){
+  var plan=getActivePlan();if(!plan)return'';
+  var tasks=plan.tasks||[];
+  var families=plan.families||DEFAULT_FAMILIES;
+
+  var html='<div class="card task-card"><div class="card-title">📋 任务分配';
+  html+='<button class="btn btn-xs btn-outline" style="margin-left:auto" onclick="showTaskAddForm()">+ 添加任务</button></div>';
+
+  tasks.forEach(function(t,i){
+    html+='<div class="task-item">';
+    html+='<input type="checkbox" '+(t.done?'checked':'')+' onchange="toggleTask('+i+',this.checked)">';
+    html+='<span class="task-text'+(t.done?' done':'')+'">'+esc(t.text)+'</span>';
+    html+='<span class="task-pill" style="background:'+(supFamilyColors[t.assignee]||'#888')+'">'+esc(t.assignee)+'</span>';
+    html+='<button class="btn-icon danger" onclick="deleteTask('+i+')">🗑️</button>';
+    html+='</div>';
+  });
+
+  html+='<div class="task-add-row" id="taskAddRow" style="display:none">';
+  html+='<input id="taskAddText" placeholder="任务内容">';
+  html+='<select id="taskAddAssignee">';
+  families.forEach(function(f){html+='<option value="'+esc(f.name)+'">'+esc(f.name)+'</option>'});
+  html+='</select>';
+  html+='<button class="btn btn-xs btn-primary" onclick="addTask()">确认</button>';
+  html+='<button class="btn btn-xs btn-outline" onclick="hideTaskAddForm()">取消</button>';
+  html+='</div></div>';
+  return html;
+}
+
+function showTaskAddForm(){document.getElementById('taskAddRow').style.display='flex';}
+function hideTaskAddForm(){document.getElementById('taskAddRow').style.display='none';document.getElementById('taskAddText').value='';}
+function addTask(){
+  var text=document.getElementById('taskAddText').value.trim();
+  if(!text)return;
+  var plan=getActivePlan();if(!plan)return;
+  if(!plan.tasks)plan.tasks=[];
+  plan.tasks.push({text:text,assignee:document.getElementById('taskAddAssignee').value,done:false});
+  saveActivePlan(plan);
+  renderOverview();
+}
+function toggleTask(i,checked){
+  var plan=getActivePlan();if(!plan)return;
+  if(plan.tasks&&plan.tasks[i]){plan.tasks[i].done=checked;saveActivePlan(plan);}
+  renderOverview();
+}
+function deleteTask(i){
+  var plan=getActivePlan();if(!plan)return;
+  if(plan.tasks){plan.tasks.splice(i,1);saveActivePlan(plan);}
+  renderOverview();
+}
+
+/* ================================================================
+   EQUIPMENT TEMPLATES
+   ================================================================ */
+function getTemplates(){
+  try{var v=localStorage.getItem('camping_gear_templates');return v?JSON.parse(v):[]}catch(e){return[]}
+}
+function saveTemplates(arr){try{localStorage.setItem('camping_gear_templates',JSON.stringify(arr))}catch(e){}}
+
+function saveTemplateModal(){
+  var plan=getActivePlan();if(!plan)return;
+  var fg=plan.familyGear||{};
+  var pf=plan.publicFood||[];
+  var pg=plan.publicGear||[];
+
+  var preview='<div style="max-height:300px;overflow-y:auto;margin-bottom:12px;font-size:13px">';
+  var totalCount=0;
+
+  Object.keys(fg).forEach(function(fam){
+    preview+='<div style="font-weight:600;color:var(--primary);margin-top:8px">🏕️ '+esc(fam)+' 自带</div>';
+    (fg[fam]||[]).forEach(function(cat){
+      cat.items.forEach(function(it){
+        preview+='<div style="padding:2px 0;color:var(--text2)">'+esc(it.name)+(it.qty?' ×'+esc(it.qty):'')+' ['+esc(cat.cat)+']</div>';
+        totalCount++;
+      });
+    });
+  });
+
+  preview+='<div style="font-weight:600;color:var(--primary);margin-top:8px">🍖 公共食材</div>';
+  pf.forEach(function(cat){
+    cat.items.forEach(function(it){
+      preview+='<div style="padding:2px 0;color:var(--text2)">'+esc(it.name)+' ×'+esc(it.qty)+' ['+esc(cat.cat)+']</div>';
+      totalCount++;
+    });
+  });
+
+  preview+='<div style="font-weight:600;color:var(--primary);margin-top:8px">⛺ 公共装备</div>';
+  pg.forEach(function(cat){
+    cat.items.forEach(function(it){
+      preview+='<div style="padding:2px 0;color:var(--text2)">'+esc(it.name)+' ×'+esc(it.qty)+' ['+esc(cat.cat)+']</div>';
+      totalCount++;
+    });
+  });
+  preview+='</div>';
+  preview+='<div style="font-size:12px;color:var(--text3);margin-bottom:12px">共 '+totalCount+' 件物品</div>';
+
+  if(totalCount===0){T('当前计划无物资可保存');return;}
+
+  var html=preview;
+  html+=modalField('模板名称','<input id="mTmplName" placeholder="如：夏季露营基础装备">');
+  html+='<div class="modal-actions"><button class="btn btn-outline" onclick="closeModal()">取消</button>';
+  html+='<button class="btn btn-primary" onclick="doSaveTemplate()">💾 保存模板</button></div>';
+  openModal('💾 保存为模板',html);
+}
+
+function doSaveTemplate(){
+  var name=document.getElementById('mTmplName').value.trim();
+  if(!name){T('请输入模板名称');return;}
+
+  var plan=getActivePlan();if(!plan)return;
+  var fg=plan.familyGear||{};
+  var pf=plan.publicFood||[];
+  var pg=plan.publicGear||[];
+
+  var categories=[];
+
+  Object.keys(fg).forEach(function(fam){
+    (fg[fam]||[]).forEach(function(cat){
+      var items=cat.items.map(function(it){return {name:it.name,quantity:it.qty||''}});
+      if(items.length>0)categories.push({cat:'['+fam+'] '+cat.cat,items:items});
+    });
+  });
+
+  pf.forEach(function(cat){
+    var items=cat.items.map(function(it){return {name:it.name,quantity:it.qty}});
+    if(items.length>0)categories.push({cat:'🍖 '+cat.cat,items:items});
+  });
+
+  pg.forEach(function(cat){
+    var items=cat.items.map(function(it){return {name:it.name,quantity:it.qty}});
+    if(items.length>0)categories.push({cat:'⛺ '+cat.cat,items:items});
+  });
+
+  var templates=getTemplates();
+  templates.push({name:name,categories:categories});
+  saveTemplates(templates);
+  closeModal();T('模板「'+name+'」已保存');
+}
+
+function loadTemplateModal(){
+  var templates=getTemplates();
+  if(templates.length===0){T('暂无已保存的模板');return;}
+
+  var html='';
+  templates.forEach(function(tmpl,i){
+    var nItems=0;tmpl.categories.forEach(function(c){nItems+=c.items.length});
+    html+='<div style="display:flex;align-items:center;padding:12px;background:var(--card);border-radius:var(--radius);margin-bottom:8px;box-shadow:var(--shadow);cursor:pointer" onclick="selectTemplate('+i+')">';
+    html+='<div style="flex:1"><div style="font-weight:600;font-size:14px">'+esc(tmpl.name)+'</div>';
+    html+='<div style="font-size:12px;color:var(--text3)">'+nItems+' 件物品 · '+tmpl.categories.length+' 个分类</div></div>';
+    html+='<button class="btn-icon danger" onclick="event.stopPropagation();deleteTemplate('+i+')" title="删除模板">🗑️</button>';
+    html+='</div>';
+  });
+
+  openModal('📂 加载模板',html);
+}
+
+function selectTemplate(idx){
+  var templates=getTemplates();
+  var tmpl=templates[idx];
+  if(!tmpl)return;
+
+  var html='<p style="margin-bottom:12px">将模板 <strong>'+esc(tmpl.name)+'</strong> 加载到：</p>';
+  html+=modalField('加载到','<select id="mTmplTarget"><option value="publicGear">⛺ 公共装备</option><option value="publicFood">🍖 公共食材</option></select>');
+  html+='<div class="modal-actions"><button class="btn btn-outline" onclick="closeModal()">取消</button>';
+  html+='<button class="btn btn-primary" onclick="doLoadTemplate('+idx+')">📥 加载</button></div>';
+  openModal('📂 加载模板',html);
+}
+
+function doLoadTemplate(idx){
+  var target=document.getElementById('mTmplTarget').value;
+  var templates=getTemplates();
+  var tmpl=templates[idx];
+  if(!tmpl)return;
+
+  var plan=getActivePlan();if(!plan)return;
+  if(!plan[target])plan[target]=[];
+  var list=plan[target];
+
+  tmpl.categories.forEach(function(tmplCat){
+    var catName=tmplCat.cat;
+    var existing=list.find(function(c){return c.cat===catName});
+    if(!existing){existing={cat:catName,items:[]};list.push(existing);}
+    tmplCat.items.forEach(function(it){
+      var already=existing.items.find(function(ei){return ei.name===it.name});
+      if(!already){existing.items.push({name:it.name,qty:it.quantity||'1',assignee:''});}
+    });
+  });
+
+  plan[target]=list;
+  saveActivePlan(plan);
+  closeModal();
+  renderSupplies();
+  T('模板已加载到'+(target==='publicGear'?'公共装备':'公共食材'));
+}
+
+function deleteTemplate(idx){
+  var templates=getTemplates();
+  var name=templates[idx]?templates[idx].name:'';
+  templates.splice(idx,1);
+  saveTemplates(templates);
+  loadTemplateModal();
+  T('模板「'+name+'」已删除');
+}
+
+/* ================================================================
+   BUDGET
+   ================================================================ */
+function setBudget(){
+  var plan=getActivePlan();if(!plan)return;
+  var current=plan.budget||0;
+  var html=modalField('预算金额 (¥)','<input id="mBudgetAmount" type="number" step="1" min="0" value="'+(current||'')+'" placeholder="如：2000">');
+  html+='<div class="modal-actions"><button class="btn btn-outline" onclick="closeModal()">取消</button>';
+  html+='<button class="btn btn-primary" onclick="saveBudget()">设置预算</button></div>';
+  openModal('💰 设置预算',html);
+}
+
+function saveBudget(){
+  var amount=parseFloat(document.getElementById('mBudgetAmount').value);
+  if(isNaN(amount)||amount<0){T('请输入有效金额');return;}
+  var plan=getActivePlan();if(!plan)return;
+  plan.budget=amount;
+  saveActivePlan(plan);
+  closeModal();renderExpenses();
+}
+
 </script>
 </body>
 </html>
