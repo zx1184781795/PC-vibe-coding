@@ -4,11 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>露营小助手</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=ZCOOL+XiaoWei&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="lib/leaflet.css" />
 <style>
 /* ===== Reset ===== */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -491,9 +487,9 @@ body{
 .budget-stats{display:flex;justify-content:space-between;font-size:12px;color:var(--text2);margin-top:4px}
 .budget-over{color:var(--red);font-weight:600}
 </style>
-<script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="window.__supabaseFailed=true"></script>
+<script defer src="lib/supabase.min.js" onerror="window.__supabaseFailed=true"></script>
 <script src="supabase-config.js"></script>
-<script defer src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" onerror="window.__leafletFailed=true"></script>
+<script defer src="lib/leaflet.js" onerror="window.__leafletFailed=true"></script>
 </head>
 <body>
 <div id="app">
@@ -2689,6 +2685,7 @@ var campMap = null;
 var campMarker = null;
 function initCampMap(plan) {
   try { if (typeof L === 'undefined') { console.warn('Leaflet 未加载，跳过地图初始化'); return; } } catch(e) { return; }
+  L.Icon.Default.imagePath = 'lib/images/';
   var el = document.getElementById('campMap');
   if (!el) return;
   if (campMap) { campMap.remove(); campMap = null; }
