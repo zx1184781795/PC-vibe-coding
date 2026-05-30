@@ -9,7 +9,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=ZCOOL+XiaoWei&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-<script defer src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" onerror="window.__leafletFailed=true"></script>
 <style>
 /* ===== Reset ===== */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -211,7 +210,7 @@ body{
 .ov-stat-item .stat-num{font-size:22px;font-weight:800;color:var(--primary)}
 .ov-stat-item .stat-label{font-size:11px;color:var(--text3);margin-top:2px}
 .ov-map-container{position:relative;border-radius:var(--radius);overflow:hidden;margin-bottom:10px}
-.ov-map{width:100%;height:260px;z-index:1}
+.ov-map { width: 100%; height: 200px; border-radius: 8px; }
 .ov-map-inputs{margin-top:12px}
 .ov-map-input-row{display:flex;gap:8px;align-items:center;margin-bottom:8px}
 .ov-map-input-row label{font-size:12px;color:var(--text2);white-space:nowrap;min-width:42px}
@@ -494,12 +493,13 @@ body{
 </style>
 <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="window.__supabaseFailed=true"></script>
 <script src="supabase-config.js"></script>
+<script defer src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" onerror="window.__leafletFailed=true"></script>
 </head>
 <body>
 <div id="app">
   <!-- Fixed Header -->
   <header id="header">
-    <button class="btn-icon" onclick="switchTab('home')" title="返回">�?/button>
+    <button class="btn-icon" onclick="switchTab('home')" title="返回">←</button>
     <div class="header-center" onclick="toggleHeaderDropdown()">
       <div class="header-title" id="headerTitle">我的露营</div>
       <div class="header-sub" id="headerSub"></div>
@@ -510,7 +510,7 @@ body{
     <div class="plan-dropdown-backdrop" id="headerDropdownBackdrop" onclick="closeHeaderDropdown()"></div>
   </header>
   <main id="content">
-    <!-- ===== HOME (保留但不�?TabBar 显示) ===== -->
+    <!-- ===== HOME (保留但不在 TabBar 显示) ===== -->
     <div id="panel-home" class="panel"></div>
     <!-- ===== OVERVIEW ===== -->
     <div id="panel-overview" class="panel"></div>
@@ -525,7 +525,7 @@ body{
   </main>
   <!-- Tab Bar -->
   <nav id="tabbar">
-    <div class="tab" data-tab="overview"><span class="tab-emoji">🗺�?/span>概况</div>
+    <div class="tab" data-tab="overview"><span class="tab-emoji">🗺️</span>概况</div>
     <div class="tab" data-tab="supplies"><span class="tab-emoji">📦</span>物资</div>
     <div class="tab" data-tab="expenses"><span class="tab-emoji">💰</span>花费</div>
     <div class="tab" data-tab="aa"><span class="tab-emoji">⚖️</span>AA</div>
@@ -543,15 +543,12 @@ body{
 /* ================================================================
    SUPABASE INTEGRATION
    ================================================================ */
-var supabase = (function(){
-  try {
-    if (window.__supabaseFailed) throw new Error('SDK failed');
-    return window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
-  } catch(e) {
-    console.warn('[Camping] Supabase unavailable, local-only mode');
-    return null;
-  }
-})();
+var supabase = null;
+try {
+  supabase = window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
+} catch(e) {
+  supabase = null;
+}
 var _supabaseReady = false;
 
 /* ----- Auth ----- */
@@ -562,6 +559,7 @@ async function signInWithGitHub() {
 }
 
 async function signOut() {
+  if (!supabase) return;
   await supabase.auth.signOut();
   _supabaseReady = false;
   localStorage.removeItem('supabase_migrated');
@@ -588,7 +586,7 @@ function renderAuthUI() {
       var h = '';
       if (av) h += '<img src="' + esc(av) + '" style="width:26px;height:26px;border-radius:50%;flex-shrink:0" onerror="this.style.display=\'none\'">';
       h += '<span style="font-size:12px;font-weight:600;color:var(--text);max-width:72px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + esc(name) + '</span>';
-      h += '<button class="btn btn-xs btn-outline" style="padding:3px 8px;font-size:11px" onclick="signOut()">退�?/button>';
+      h += '<button class="btn btn-xs btn-outline" style="padding:3px 8px;font-size:11px" onclick="signOut()">退出</button>';
       area.innerHTML = h;
     } else {
       area.innerHTML = '<button class="btn btn-xs btn-primary" style="padding:4px 10px;font-size:12px;white-space:nowrap" onclick="signInWithGitHub()">GitHub 登录</button>';
@@ -618,14 +616,15 @@ supabase.auth.onAuthStateChange(function(event, session) {
 
 /* ----- Migration ----- */
 async function migrateLocalDataToSupabase(userId) {
-  if (!supabase || localStorage.getItem('supabase_migrated')) return;
+  if (!supabase) return;
+  if (localStorage.getItem('supabase_migrated')) return;
   try {
     var lp = JSON.parse(localStorage.getItem('camping_plans') || '[]');
     for (var i = 0; i < lp.length; i++) {
       var p = lp[i], info = p.info || {};
       var row = {
         user_id: userId,
-        name: info.name || p.name || '未命�?,
+        name: info.name || p.name || '未命名',
         date: info.date || '待定',
         location: info.location || '待定',
         families: p.families || [],
@@ -695,7 +694,8 @@ async function loadTemplatesFromSupabase() {
 
 /* ----- Sync to Supabase (fire-and-forget from savePlans) ----- */
 async function _syncPlansToSupabase() {
-  if (!_supabaseReady || !supabase) return;
+  if (!supabase) return;
+  if (!_supabaseReady) return;
   var user = await getCurrentUser();
   if (!user) return;
   var plans = JSON.parse(localStorage.getItem('camping_plans') || '[]');
@@ -705,7 +705,7 @@ async function _syncPlansToSupabase() {
   for (var i = 0; i < plans.length; i++) {
     var p = plans[i], info = p.info || {};
     var row = {
-      user_id: user.id, name: info.name || p.name || '未命�?, date: info.date || '待定', location: info.location || '待定',
+      user_id: user.id, name: info.name || p.name || '未命名', date: info.date || '待定', location: info.location || '待定',
       families: p.families || [],
       supplies: { familyGear: p.familyGear || {}, publicFood: p.publicFood || [], publicGear: p.publicGear || [], itinerary: p.itinerary || [], mapConfig: p.mapConfig || {} },
       expenses: p.expenses || [], tasks: p.tasks || [], budget: p.budget || 0, shopping_checked: p.shoppingChecked || {},
@@ -774,7 +774,7 @@ async function deleteGearTemplateFromSupabase(id) {
 }
 
 /* ================================================================
-   DATA MODEL �?MULTI-PLAN SUPPORT
+   DATA MODEL — MULTI-PLAN SUPPORT
    ================================================================ */
 function readPlans(){
   try{var v=localStorage.getItem('camping_plans');return v?JSON.parse(v):[]}catch(e){return[]}
@@ -798,7 +798,7 @@ function saveActivePlan(plan){
 
 function exportData(){
   var plan=getActivePlan();
-  if(!plan){T('暂无数据可导�?);return;}
+  if(!plan){T('暂无数据可导出');return;}
   var info=L('info',DEFAULT_INFO);
   var families=L('families',DEFAULT_FAMILIES);
   var expenses=L('expenses',[]);
@@ -817,10 +817,10 @@ function exportData(){
   a.href=url;a.download=(plan.name||'露营计划')+'.json';
   document.body.appendChild(a);a.click();
   document.body.removeChild(a);URL.revokeObjectURL(url);
-  T('已导�?);
+  T('已导出');
 }
 
-// L / S �?now proxy through active plan
+// L / S — now proxy through active plan
 function L(k,d){
   try{
     var p=getActivePlan();if(p&&(k in p))return p[k];
@@ -836,53 +836,53 @@ function S(k,v){
 }
 
 /* ===== PRESET DATA ===== */
-var DEFAULT_INFO = {name:'周末露营',date:'5�?1�?- 6�?�?,location:'成都 · 青城�?};
+var DEFAULT_INFO = {name:'周末露营',date:'5月31日 - 6月1日',location:'成都 · 青城山'};
 
 var DEFAULT_FAMILIES = [
-  {name:'张旭�?,members:['张旭','崔丽']},
-  {name:'小明�?,members:['小明','小红','宝宝']},
-  {name:'小红�?,members:['小红','小萍']}
+  {name:'张旭家',members:['张旭','崔丽']},
+  {name:'小明家',members:['小明','小红','宝宝']},
+  {name:'小红家',members:['小红','小萍']}
 ];
 
 var DEFAULT_FAMILY_GEAR = {
-  '张旭�?:[
+  '张旭家':[
     {cat:'睡眠装备',items:[
-      {name:'帐篷',checked:true},{name:'睡袋×2',checked:true},{name:'防潮垫�?',checked:true},
-      {name:'充气垫�?',checked:false},{name:'露营枕�?',checked:true}
+      {name:'帐篷',checked:true},{name:'睡袋×2',checked:true},{name:'防潮垫×2',checked:true},
+      {name:'充气垫×2',checked:false},{name:'露营枕×2',checked:true}
     ]},
     {cat:'炊具餐具',items:[
-      {name:'卡式�?,checked:true},{name:'气罐×4',checked:true},{name:'锅具套装',checked:true},
-      {name:'餐具套装',checked:true},{name:'保温�?,checked:false}
+      {name:'卡式炉',checked:true},{name:'气罐×4',checked:true},{name:'锅具套装',checked:true},
+      {name:'餐具套装',checked:true},{name:'保温箱',checked:false}
     ]},
     {cat:'其他',items:[
-      {name:'折叠椅�?',checked:true},{name:'头灯',checked:true},{name:'充电�?,checked:true},
-      {name:'垃圾�?,checked:true},{name:'湿巾纸巾',checked:true}
+      {name:'折叠椅×2',checked:true},{name:'头灯',checked:true},{name:'充电宝',checked:true},
+      {name:'垃圾袋',checked:true},{name:'湿巾纸巾',checked:true}
     ]}
   ],
-  '小明�?:[
+  '小明家':[
     {cat:'睡眠装备',items:[
-      {name:'家庭帐篷',checked:true},{name:'睡袋×3',checked:true},{name:'防潮垫�?',checked:false},
-      {name:'充气垫�?',checked:true},{name:'露营枕�?',checked:true},{name:'保暖�?,checked:true}
+      {name:'家庭帐篷',checked:true},{name:'睡袋×3',checked:true},{name:'防潮垫×3',checked:false},
+      {name:'充气垫×3',checked:true},{name:'露营枕×3',checked:true},{name:'保暖毯',checked:true}
     ]},
     {cat:'炊具餐具',items:[
-      {name:'烧水�?,checked:true},{name:'保温�?,checked:true},{name:'一次性手�?,checked:true}
+      {name:'烧水壶',checked:true},{name:'保温壶',checked:true},{name:'一次性手套',checked:true}
     ]},
     {cat:'其他',items:[
-      {name:'折叠�?,checked:true},{name:'天幕',checked:true},{name:'蓝牙音箱',checked:true},
-      {name:'急救�?,checked:true},{name:'驱蚊�?,checked:true}
+      {name:'折叠桌',checked:true},{name:'天幕',checked:true},{name:'蓝牙音箱',checked:true},
+      {name:'急救包',checked:true},{name:'驱蚊液',checked:true}
     ]}
   ],
-  '小红�?:[
+  '小红家':[
     {cat:'睡眠装备',items:[
-      {name:'双人帐篷',checked:true},{name:'睡袋×2',checked:false},{name:'防潮垫�?',checked:true},
-      {name:'充气垫�?',checked:true}
+      {name:'双人帐篷',checked:true},{name:'睡袋×2',checked:false},{name:'防潮垫×2',checked:true},
+      {name:'充气垫×2',checked:true}
     ]},
     {cat:'炊具餐具',items:[
-      {name:'砧板+刀�?,checked:true},{name:'洗洁�?,checked:true},{name:'洗碗�?,checked:true}
+      {name:'砧板+刀具',checked:true},{name:'洗洁精',checked:true},{name:'洗碗布',checked:true}
     ]},
     {cat:'其他',items:[
-      {name:'折叠椅�?',checked:true},{name:'防水�?,checked:true},{name:'相机',checked:false},
-      {name:'遮阳�?,checked:true},{name:'防晒�?,checked:true}
+      {name:'折叠椅×2',checked:true},{name:'防水袋',checked:true},{name:'相机',checked:false},
+      {name:'遮阳帽',checked:true},{name:'防晒霜',checked:true}
     ]}
   ]
 };
@@ -891,65 +891,65 @@ var DEFAULT_GEAR_CATEGORIES = ['睡眠装备', '炊具餐具', '其他'];
 
 var DEFAULT_PUBLIC_FOOD = [
   {cat:'肉类',items:[
-    {name:'肥牛�?,qty:'500g',assignee:'张旭'},{name:'羊肉�?,qty:'400g',assignee:'小明'},
-    {name:'鸡翅�?,qty:'12�?,assignee:'小红'},{name:'虾滑',qty:'300g',assignee:'张旭'},
+    {name:'肥牛卷',qty:'500g',assignee:'张旭'},{name:'羊肉卷',qty:'400g',assignee:'小明'},
+    {name:'鸡翅中',qty:'12个',assignee:'小红'},{name:'虾滑',qty:'300g',assignee:'张旭'},
     {name:'火锅丸子',qty:'400g',assignee:'小明'}
   ]},
   {cat:'蔬菜',items:[
-    {name:'蔬菜拼盘',qty:'1�?,assignee:'小红'},{name:'菌菇拼盘',qty:'1�?,assignee:'张旭'},
-    {name:'玉米',qty:'6�?,assignee:'小明'},{name:'豆腐+豆皮',qty:'1�?,assignee:'小红'}
+    {name:'蔬菜拼盘',qty:'1份',assignee:'小红'},{name:'菌菇拼盘',qty:'1份',assignee:'张旭'},
+    {name:'玉米',qty:'6根',assignee:'小明'},{name:'豆腐+豆皮',qty:'1份',assignee:'小红'}
   ]},
   {cat:'调料',items:[
-    {name:'火锅底料',qty:'2�?,assignee:'张旭'},{name:'蘸料套装',qty:'1�?,assignee:'小明'},
-    {name:'烧烤�?,qty:'1�?,assignee:'小红'}
+    {name:'火锅底料',qty:'2包',assignee:'张旭'},{name:'蘸料套装',qty:'1份',assignee:'小明'},
+    {name:'烧烤酱',qty:'1瓶',assignee:'小红'}
   ]},
   {cat:'饮品',items:[
-    {name:'饮料大瓶',qty:'3�?,assignee:'小明'},{name:'矿泉�?,qty:'24�?,assignee:'张旭'},
-    {name:'啤酒',qty:'12�?,assignee:'小红'},{name:'茶包/咖啡',qty:'1�?,assignee:'张旭'}
+    {name:'饮料大瓶',qty:'3瓶',assignee:'小明'},{name:'矿泉水',qty:'24瓶',assignee:'张旭'},
+    {name:'啤酒',qty:'12罐',assignee:'小红'},{name:'茶包/咖啡',qty:'1份',assignee:'张旭'}
   ]}
 ];
 
 var DEFAULT_PUBLIC_GEAR = [
   {cat:'睡眠装备',items:[
-    {name:'天幕',qty:'1�?,assignee:'小明'},{name:'地布',qty:'2�?,assignee:'张旭'},
-    {name:'帐篷灯串',qty:'1�?,assignee:'小红'}
+    {name:'天幕',qty:'1个',assignee:'小明'},{name:'地布',qty:'2张',assignee:'张旭'},
+    {name:'帐篷灯串',qty:'1套',assignee:'小红'}
   ]},
   {cat:'炊具装备',items:[
-    {name:'卡式�?,qty:'2�?,assignee:'张旭'},{name:'丁烷气罐',qty:'8�?,assignee:'小明'},
-    {name:'锅具套装',qty:'1�?,assignee:'小红'},{name:'烧水�?,qty:'1�?,assignee:'小明'},
-    {name:'保温�?,qty:'1�?,assignee:'张旭'},{name:'折叠水桶',qty:'2�?,assignee:'小红'}
+    {name:'卡式炉',qty:'2个',assignee:'张旭'},{name:'丁烷气罐',qty:'8罐',assignee:'小明'},
+    {name:'锅具套装',qty:'1套',assignee:'小红'},{name:'烧水壶',qty:'1个',assignee:'小明'},
+    {name:'保温箱',qty:'1个',assignee:'张旭'},{name:'折叠水桶',qty:'2个',assignee:'小红'}
   ]},
   {cat:'照明装备',items:[
-    {name:'露营主灯',qty:'2�?,assignee:'张旭'},{name:'头灯',qty:'3�?,assignee:'小明'},
-    {name:'手电�?,qty:'2�?,assignee:'小红'},{name:'备用电池',qty:'1�?,assignee:'张旭'}
+    {name:'露营主灯',qty:'2个',assignee:'张旭'},{name:'头灯',qty:'3个',assignee:'小明'},
+    {name:'手电筒',qty:'2个',assignee:'小红'},{name:'备用电池',qty:'1套',assignee:'张旭'}
   ]},
   {cat:'桌椅装备',items:[
-    {name:'折叠�?,qty:'2�?,assignee:'小明'},{name:'折叠�?,qty:'6�?,assignee:'小明'},
-    {name:'野餐�?,qty:'2�?,assignee:'小红'}
+    {name:'折叠桌',qty:'2张',assignee:'小明'},{name:'折叠椅',qty:'6把',assignee:'小明'},
+    {name:'野餐垫',qty:'2张',assignee:'小红'}
   ]},
   {cat:'其他',items:[
-    {name:'垃圾�?,qty:'1�?,assignee:'张旭'},{name:'纸巾+湿巾',qty:'1�?,assignee:'小红'},
-    {name:'急救�?,qty:'1�?,assignee:'小明'},{name:'驱蚊�?,qty:'2�?,assignee:'张旭'},
-    {name:'户外刀�?,qty:'1�?,assignee:'小明'},{name:'蓝牙音箱',qty:'1�?,assignee:'小明'}
+    {name:'垃圾袋',qty:'1卷',assignee:'张旭'},{name:'纸巾+湿巾',qty:'1份',assignee:'小红'},
+    {name:'急救包',qty:'1个',assignee:'小明'},{name:'驱蚊液',qty:'2瓶',assignee:'张旭'},
+    {name:'户外刀具',qty:'1把',assignee:'小明'},{name:'蓝牙音箱',qty:'1个',assignee:'小明'}
   ]}
 ];
 
 var DEFAULT_EXPENSES = [
   {purpose:'食材采购',amount:350,payer:'张旭',inAA:true},
-  {purpose:'营地�?,amount:200,payer:'小明',inAA:true},
-  {purpose:'油费过路�?,amount:150,payer:'小红',inAA:true},
-  {purpose:'木炭+烧烤�?,amount:80,payer:'张旭',inAA:true},
+  {purpose:'营地费',amount:200,payer:'小明',inAA:true},
+  {purpose:'油费过路费',amount:150,payer:'小红',inAA:true},
+  {purpose:'木炭+烧烤架',amount:80,payer:'张旭',inAA:true},
   {purpose:'个人零食(不计AA)',amount:45,payer:'小明',inAA:false}
 ];
 
 var DEFAULT_ITINERARY = [
-  {day:'周六',time:'08:00',title:'集合出发',desc:'在市区集合点集合，检查装备物资，分发对讲�?},
+  {day:'周六',time:'08:00',title:'集合出发',desc:'在市区集合点集合，检查装备物资，分发对讲机'},
   {day:'周六',time:'10:30',title:'抵达营地',desc:'驱车到达青城山露营地，停车卸装备'},
-  {day:'周六',time:'11:00',title:'搭建营地',desc:'搭建帐篷、天幕，布置生活区和炊事�?},
-  {day:'周六',time:'12:00',title:'午餐时间',desc:'简单午餐，休整。准备下午活�?},
+  {day:'周六',time:'11:00',title:'搭建营地',desc:'搭建帐篷、天幕，布置生活区和炊事区'},
+  {day:'周六',time:'12:00',title:'午餐时间',desc:'简单午餐，休整。准备下午活动'},
   {day:'周六',time:'14:00',title:'自由活动',desc:'徒步探索、钓鱼、拍照等自由活动'},
-  {day:'周六',time:'17:00',title:'准备晚餐',desc:'生火、准备食材，开始火�?烧烤'},
-  {day:'周六',time:'19:00',title:'篝火晚会',desc:'篝火、音乐、星空、聊�?},
+  {day:'周六',time:'17:00',title:'准备晚餐',desc:'生火、准备食材，开始火锅+烧烤'},
+  {day:'周六',time:'19:00',title:'篝火晚会',desc:'篝火、音乐、星空、聊天'},
   {day:'周日',time:'08:00',title:'早餐',desc:'简单早餐，收拾个人物品'},
   {day:'周日',time:'10:00',title:'拔营返程',desc:'收拾装备，清理营地垃圾，拍合影后出发返回'}
 ];
@@ -957,7 +957,7 @@ var DEFAULT_ITINERARY = [
 function makeDefaultPlan(name, info, families, familyGear, expenses, publicFood, publicGear, itinerary){
   return {
     name:name||'我的露营',
-    info:info||{name:'未命�?,date:'待定',location:'待定'},
+    info:info||{name:'未命名',date:'待定',location:'待定'},
     families:families||DEFAULT_FAMILIES,
     familyGear:familyGear||DEFAULT_FAMILY_GEAR,
     expenses:expenses||[],
@@ -1025,7 +1025,7 @@ function deletePlan(idx){
   else if(currentTab==='aa')renderAA();
   else if(currentTab==='share')renderShare();
   else if(currentTab==='home')renderHome();
-  T('计划已删�?);
+  T('计划已删除');
 }
 
 /* ===== HEADER ===== */
@@ -1059,13 +1059,13 @@ function renderHeaderDropdown(){
   var html='';
   plans.forEach(function(p,i){
     html+='<div class="plan-dropdown-item'+(i===active?' active':'')+'" onclick="switchPlan('+i+');closeHeaderDropdown()">';
-    html+='<span>'+(i===active?'<span class="plan-item-check">�?/span> ':'')+esc(p.name)+'</span>';
+    html+='<span>'+(i===active?'<span class="plan-item-check">✓</span> ':'')+esc(p.name)+'</span>';
     if(plans.length>1){
       html+='<span class="plan-item-delete" onclick="event.stopPropagation();deletePlan('+i+')">×</span>';
     }
     html+='</div>';
   });
-  html+='<div class="plan-dropdown-add" onclick="newPlanModal();closeHeaderDropdown()">�?新建计划</div>';
+  html+='<div class="plan-dropdown-add" onclick="newPlanModal();closeHeaderDropdown()">＋ 新建计划</div>';
   document.getElementById('headerDropdown').innerHTML=html;
 }
 
@@ -1108,7 +1108,7 @@ function modalField(label,html){return '<div class="modal-field"><label>'+label+
    ================================================================ */
 function renderHome(){
   var plans=readPlans();
-  var html='<div class="home-hero"><span class="hero-emoji">�?/span><h1>露营小助�?/h1><p>告别繁琐表格，轻松规划露营每件事</p></div>';
+  var html='<div class="home-hero"><span class="hero-emoji">⛺</span><h1>露营小助手</h1><p>告别繁琐表格，轻松规划露营每件事</p></div>';
   if(plans.length>0){
     plans.forEach(function(plan,idx){
       var nFam=plan.families.length;
@@ -1116,17 +1116,17 @@ function renderHome(){
       html+='<div class="home-plan-card" onclick="switchPlan('+idx+');switchTab(\'overview\')">';
       html+='<div class="home-plan-card-actions">';
       html+='<button class="home-plan-card-btn export-btn" onclick="event.stopPropagation();exportPlan('+idx+')" title="导出计划">📤</button>';
-      html+='<button class="home-plan-card-btn delete-btn" onclick="event.stopPropagation();if(confirm(\'确定删除'+esc(plan.info.name)+'计划？\')){deletePlan('+idx+')}" title="删除计划">🗑�?/button>';
+      html+='<button class="home-plan-card-btn delete-btn" onclick="event.stopPropagation();if(confirm(\'确定删除'+esc(plan.info.name)+'计划？\')){deletePlan('+idx+')}" title="删除计划">🗑️</button>';
       html+='</div>';
-      html+='<div class="plan-name">🏕�?'+esc(plan.info.name)+'</div>';
+      html+='<div class="plan-name">🏕️ '+esc(plan.info.name)+'</div>';
       html+='<div class="plan-meta"><span>📅 '+esc(plan.info.date)+'</span><span>📍 '+esc(plan.info.location)+'</span></div>';
-      html+='<div class="plan-stats"><span>🏠 '+nFam+'个家�?/span><span>👥 '+nPpl+'�?/span></div></div>';
+      html+='<div class="plan-stats"><span>🏠 '+nFam+'个家庭</span><span>👥 '+nPpl+'人</span></div></div>';
     });
   }
   html+='<div class="home-cta">';
-  html+='<div class="hint">'+(plans.length>0?'已有 '+plans.length+' 个露营计�?:'还没有露营计划？')+'</div>';
+  html+='<div class="hint">'+(plans.length>0?'已有 '+plans.length+' 个露营计划':'还没有露营计划？')+'</div>';
   html+='<div style="display:flex;gap:10px;margin-bottom:10px">';
-  html+='<button class="btn btn-primary" style="flex:1" onclick="newPlanModal()">�?新建露营计划</button>';
+  html+='<button class="btn btn-primary" style="flex:1" onclick="newPlanModal()">＋ 新建露营计划</button>';
   html+='<button class="btn btn-outline" style="flex:1" onclick="joinRoomModal()">🔗 加入房间</button>';
   html+='</div>';
   html+='<div style="display:flex;gap:10px;margin-bottom:10px">';
@@ -1141,7 +1141,7 @@ function loadSampleData(){
   var plans=readPlans();
   for(var i=0;i<plans.length;i++){
     if(plans[i].info&&plans[i].info.name===DEFAULT_INFO.name){
-      T('示例计划已存�?);
+      T('示例计划已存在');
       return;
     }
   }
@@ -1151,7 +1151,7 @@ function loadSampleData(){
   savePlans(plans);
   setActivePlanIdx(plans.length-1);
   weatherData=null;
-  T('示例计划已创�?);
+  T('示例计划已创建');
   renderHome();
   if(currentTab!=='home'){switchTab(currentTab)}
 }
@@ -1171,7 +1171,7 @@ function exportPlan(idx){
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
-  T('计划已导�?);
+  T('计划已导出');
 }
 
 function importPlan(){
@@ -1198,11 +1198,11 @@ function importPlan(){
           savePlans(plans);
           setActivePlanIdx(plans.length-1);
           weatherData=null;
-          T('计划已导�?);
+          T('计划已导入');
           renderHome();
           if(currentTab!=='home'){switchTab(currentTab);}
         }catch(err){
-          T('文件解析失败，请检查文件格�?);
+          T('文件解析失败，请检查文件格式');
         }
       };
       reader.readAsText(file);
@@ -1215,15 +1215,15 @@ function importPlan(){
 
 function newPlanModal(){
   var html=modalField('计划名称','<input id="mPlanName" value="" placeholder="如：周末露营">');
-  html+=modalField('日期','<input id="mPlanDate" value="" placeholder="如：5�?1�?- 6�?�?>');
-  html+=modalField('地点','<input id="mPlanLoc" value="" placeholder="如：成都 · 青城�?>');
+  html+=modalField('日期','<input id="mPlanDate" value="" placeholder="如：5月31日 - 6月1日">');
+  html+=modalField('地点','<input id="mPlanLoc" value="" placeholder="如：成都 · 青城山">');
   html+='<div class="modal-actions"><button class="btn btn-outline" onclick="closeModal()">取消</button>';
-  html+='<button class="btn btn-primary" onclick="createNewPlan()">创建新计�?/button></div>';
-  openModal('�?新建计划',html);
+  html+='<button class="btn btn-primary" onclick="createNewPlan()">创建新计划</button></div>';
+  openModal('＋ 新建计划',html);
 }
 
 function createNewPlan(){
-  var name=document.getElementById('mPlanName').value.trim()||'未命名露�?;
+  var name=document.getElementById('mPlanName').value.trim()||'未命名露营';
   var date=document.getElementById('mPlanDate').value.trim()||'待定';
   var loc=document.getElementById('mPlanLoc').value.trim()||'待定';
   var plan=makeDefaultPlan(name,{name:name,date:date,location:loc},DEFAULT_FAMILIES,DEFAULT_FAMILY_GEAR,[],[],[],[]);
@@ -1238,31 +1238,31 @@ function createNewPlan(){
 }
 
 function joinRoomModal(){
-  var html=modalField('房间�?,'<input id="mRoomCode" placeholder="请输入房间号" maxlength="20">');
+  var html=modalField('房间号','<input id="mRoomCode" placeholder="请输入房间号" maxlength="20">');
   html+='<div class="modal-actions"><button class="btn btn-outline" onclick="closeModal()">取消</button>';
   html+='<button class="btn btn-primary" onclick="joinRoom()">加入</button></div>';
   openModal('🔗 加入房间',html);
 }
 
 function joinRoom(){
-  closeModal();T('房间功能开发中，敬请期�?);
+  closeModal();T('房间功能开发中，敬请期待');
 }
 
 /* ================================================================
    WEATHER (Open-Meteo)
    ================================================================ */
 var WMO_CODES = {
-  0:'☀�?晴天',1:'🌤�?少云',2:'🌤�?少云',3:'🌤�?少云',
-  45:'🌫�?�?,48:'🌫�?�?,
-  51:'🌧�?小雨',53:'🌧�?小雨',55:'🌧�?小雨',
-  61:'🌧�?�?,63:'🌧�?�?,65:'🌧�?�?,
-  71:'❄️ �?,73:'❄️ �?,75:'❄️ �?,77:'❄️ �?,
-  80:'🌧�?阵雨',81:'🌧�?阵雨',82:'🌧�?阵雨',
+  0:'☀️ 晴天',1:'🌤️ 少云',2:'🌤️ 少云',3:'🌤️ 少云',
+  45:'🌫️ 雾',48:'🌫️ 雾',
+  51:'🌧️ 小雨',53:'🌧️ 小雨',55:'🌧️ 小雨',
+  61:'🌧️ 雨',63:'🌧️ 雨',65:'🌧️ 雨',
+  71:'❄️ 雪',73:'❄️ 雪',75:'❄️ 雪',77:'❄️ 雪',
+  80:'🌧️ 阵雨',81:'🌧️ 阵雨',82:'🌧️ 阵雨',
   95:'⛈️ 雷暴',96:'⛈️ 雷暴',99:'⛈️ 雷暴'
 };
 var DAY_NAMES = ['周日','周一','周二','周三','周四','周五','周六'];
 
-function weatherDesc(code){return WMO_CODES[code]||'🌤�?多云'}
+function weatherDesc(code){return WMO_CODES[code]||'🌤️ 多云'}
 function weatherIconOnly(code){
   var d=weatherDesc(code);return d.split(' ')[0];
 }
@@ -1356,7 +1356,7 @@ function renderOverview(){
   html+='<div style="text-align:right;margin-bottom:10px"><button class="btn btn-xs btn-outline" onclick="editCampInfo()">编辑</button></div>';
 
   // Info Card
-  html+='<div class="card"><div class="card-title">🏕�?露营信息</div>';
+  html+='<div class="card"><div class="card-title">🏕️ 露营信息</div>';
   html+='<div class="ov-info-row">';
   html+='<div class="ov-info-item"><div class="label">计划名称</div><div class="value">'+esc(info.name)+'</div></div>';
   html+='<div class="ov-info-item"><div class="label">日期</div><div class="value">'+esc(info.date)+'</div></div>';
@@ -1367,28 +1367,28 @@ function renderOverview(){
   // Weather Card
   html+='<div class="weather-card">';
   html+='<div class="weather-header">';
-  html+='<div class="weather-title">🌤�?营地天气</div>';
+  html+='<div class="weather-title">🌤️ 营地天气</div>';
   html+='<div class="weather-refresh" onclick="fetchWeather()">🔄 刷新</div>';
   html+='</div>';
   html+='<div id="weatherCardContainer"></div>';
   html+='</div>';
 
   // Map Card
-  html+='<div class="card"><div class="card-title">🗺�?营地位置</div>';
+  html+='<div class="card"><div class="card-title">🗺️ 营地位置</div>';
   html+='<div class="ov-map-container">';
-  html+='<div class="ov-map" id="campMap"></div>';
+  html+='<div id="campMap" class="ov-map"></div>';
   html+='</div>';
   html+='<div class="ov-map-inputs">';
-  html+='<div class="ov-map-input-row"><label>经度</label><input type="number" step="0.01" id="mapLng" value="'+mapConfig.lng+'" placeholder="�?116.67">';
-  html+='<label style="min-width:36px">纬度</label><input type="number" step="0.01" id="mapLat" value="'+mapConfig.lat+'" placeholder="�?40.58"></div>';
+  html+='<div class="ov-map-input-row"><label>经度</label><input type="number" step="0.01" id="mapLng" value="'+mapConfig.lng+'" placeholder="如 116.67">';
+  html+='<label style="min-width:36px">纬度</label><input type="number" step="0.01" id="mapLat" value="'+mapConfig.lat+'" placeholder="如 40.58"></div>';
   html+='<div class="ov-map-input-row"><label>地点</label><input type="text" id="mapName" value="'+esc(mapConfig.name)+'" placeholder="营地名称"></div>';
-  html+='<button class="btn btn-primary btn-sm" style="margin-top:4px" onclick="updateMapConfig()">🗺�?更新地图</button>';
+  html+='<button class="btn btn-primary btn-sm" style="margin-top:4px" onclick="updateMapConfig()">🗺️ 更新地图</button>';
   html+='</div></div>';
 
   // Families Card
-  html+='<div class="card"><div class="card-title">👨‍👩‍👧‍�?参与家庭</div>';
+  html+='<div class="card"><div class="card-title">👨‍👩‍👧‍👦 参与家庭</div>';
   families.forEach(function(f,idx){
-    html+='<div class="ov-family-card"><span class="fam-emoji">🏕�?/span>';
+    html+='<div class="ov-family-card"><span class="fam-emoji">🏕️</span>';
     html+='<div><div class="fam-name">'+esc(f.name)+'</div>';
     html+='<div style="margin-top:4px">';
     f.members.forEach(function(m){
@@ -1397,10 +1397,10 @@ function renderOverview(){
     html+='</div></div>';
     html+='<div style="display:flex;align-items:center;gap:4px;margin-left:auto">';
     html+='<button class="btn-icon" onclick="editFamilyModal('+idx+')" title="编辑">✏️</button>';
-    html+='<button class="btn-icon danger" onclick="deleteFamily('+idx+')" title="删除">🗑�?/button>';
-    html+='<span class="fam-count">'+f.members.length+'�?/span></div></div>';
+    html+='<button class="btn-icon danger" onclick="deleteFamily('+idx+')" title="删除">🗑️</button>';
+    html+='<span class="fam-count">'+f.members.length+'人</span></div></div>';
   });
-  html+='<button class="btn btn-outline btn-block" style="margin-top:8px" onclick="addFamilyModal()">�?添加家庭</button>';
+  html+='<button class="btn btn-outline btn-block" style="margin-top:8px" onclick="addFamilyModal()">＋ 添加家庭</button>';
   html+='</div>';
 
   // Tasks Card
@@ -1413,12 +1413,9 @@ function renderOverview(){
   html+='<div class="ov-stat-item"><div class="stat-num">'+totalItems+'</div><div class="stat-label">📦 物资项目</div></div>';
   html+='</div>';
 
-  document.getElementById('panel-overview').innerHTML=html;
+  setTimeout(function() { initCampMap(plan); }, 100);
 
-  // 初始�?Leaflet 地图
-  setTimeout(function() {
-    initCampMap(mapConfig.lat, mapConfig.lng, mapConfig.name);
-  }, 100);
+  document.getElementById('panel-overview').innerHTML=html;
 
   // Trigger weather fetch if not loaded
   if(!weatherData && !weatherLoading){
@@ -1428,45 +1425,15 @@ function renderOverview(){
   }
 }
 
-var campMap = null;
-var campMarker = null;
-
-function initCampMap(lat, lng, name) {
-  if (typeof L === 'undefined' || window.__leafletFailed) return;
-  var mapEl = document.getElementById('campMap');
-  if (!mapEl) return;
-  
-  // 如果已存在，先销�?
-  if (campMap) {
-    campMap.remove();
-    campMap = null;
-    campMarker = null;
-  }
-  
-  campMap = L.map('campMap', {
-    attributionControl: false,
-    zoomControl: true
-  }).setView([lat, lng], 13);
-  
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 18
-  }).addTo(campMap);
-  
-  campMarker = L.marker([lat, lng])
-    .addTo(campMap)
-    .bindPopup(name)
-    .openPopup();
-}
-
 function updateMapConfig(){
   var lng=parseFloat(document.getElementById('mapLng').value);
   var lat=parseFloat(document.getElementById('mapLat').value);
   var name=document.getElementById('mapName').value.trim()||'营地';
-  if(isNaN(lng)||isNaN(lat)){T('请输入有效的经纬�?);return}
+  if(isNaN(lng)||isNaN(lat)){T('请输入有效的经纬度');return}
   var plan=getActivePlan();
   if(plan){plan.mapConfig={lng:lng,lat:lat,name:name};saveActivePlan(plan)}
   else{S('mapConfig',{lng:lng,lat:lat,name:name})}
-  weatherData=null;renderOverview();T('地图已更�?);
+  weatherData=null;renderOverview();T('地图已更新');
 }
 
 function editCampInfo(){
@@ -1475,18 +1442,18 @@ function editCampInfo(){
   var planName=plan?plan.name:'';
   var html=modalField('计划名称','<input id="mInfoPlanName" value="'+esc(planName)+'">');
   html+=modalField('露营名称','<input id="mInfoName" value="'+esc(info.name)+'">');
-  html+=modalField('日期','<input id="mInfoDate" value="'+esc(info.date)+'" placeholder="如：5�?1�?- 6�?�?>');
-  html+=modalField('地点','<input id="mInfoLoc" value="'+esc(info.location)+'" placeholder="如：成都 · 青城�?>');
+  html+=modalField('日期','<input id="mInfoDate" value="'+esc(info.date)+'" placeholder="如：5月31日 - 6月1日">');
+  html+=modalField('地点','<input id="mInfoLoc" value="'+esc(info.location)+'" placeholder="如：成都 · 青城山">');
   html+='<div class="modal-actions"><button class="btn btn-outline" onclick="closeModal()">取消</button>';
   html+='<button class="btn btn-primary" onclick="saveCampInfo()">保存</button></div>';
   openModal('编辑露营信息',html);
 }
 function saveCampInfo(){
-  var planName=document.getElementById('mInfoPlanName').value.trim()||'未命�?;
+  var planName=document.getElementById('mInfoPlanName').value.trim()||'未命名';
   var plan=getActivePlan();
   if(plan){plan.name=planName;saveActivePlan(plan)}
   var info={
-    name:document.getElementById('mInfoName').value.trim()||'未命�?,
+    name:document.getElementById('mInfoName').value.trim()||'未命名',
     date:document.getElementById('mInfoDate').value.trim()||'待定',
     location:document.getElementById('mInfoLoc').value.trim()||'待定'
   };
@@ -1517,17 +1484,17 @@ function saveFamily(idx){
   var families=L('families',DEFAULT_FAMILIES);
   var oldName=families[idx].name;
   var newName=document.getElementById('mFamName').value.trim();
-  if(!newName){T('请输入家庭名�?);return}
+  if(!newName){T('请输入家庭名称');return}
   var memberInputs=document.querySelectorAll('#mFamMembers input');
   var members=[];
   memberInputs.forEach(function(inp){var v=inp.value.trim();if(v)members.push(v)});
-  if(members.length===0){T('请至少添加一名成�?);return}
+  if(members.length===0){T('请至少添加一名成员');return}
   if(newName!==oldName)updateFamilyReferences(oldName,newName);
   families[idx].name=newName;
   families[idx].members=members;
   saveActivePlan(getActivePlan());
   closeModal();renderOverview();renderSupplies();
-  T('家庭已更�?);
+  T('家庭已更新');
 }
 
 function deleteFamily(idx){
@@ -1542,7 +1509,7 @@ function deleteFamily(idx){
 }
 
 function addFamilyModal(){
-  var html=modalField('家庭名称','<input id="mFamName" placeholder="如：李雷�?>');
+  var html=modalField('家庭名称','<input id="mFamName" placeholder="如：李雷家">');
   html+='<div class="modal-field"><label>家庭成员</label>';
   html+='<div id="mFamMembers">';
   html+='<div class="fam-member-row" style="display:flex;gap:6px;margin-bottom:6px">';
@@ -1558,17 +1525,17 @@ function addFamilyModal(){
 function createFamily(){
   var plan=getActivePlan();if(!plan)return;
   var newName=document.getElementById('mFamName').value.trim();
-  if(!newName){T('请输入家庭名�?);return}
+  if(!newName){T('请输入家庭名称');return}
   var memberInputs=document.querySelectorAll('#mFamMembers input');
   var members=[];
   memberInputs.forEach(function(inp){var v=inp.value.trim();if(v)members.push(v)});
-  if(members.length===0){T('请至少添加一名成�?);return}
+  if(members.length===0){T('请至少添加一名成员');return}
   plan.families.push({name:newName,members:members});
   if(!plan.familyGear)plan.familyGear={};
   plan.familyGear[newName]=DEFAULT_GEAR_CATEGORIES.map(function(c){return {cat:c,items:[]}});
   saveActivePlan(plan);
   closeModal();renderOverview();renderSupplies();
-  T('家庭已添�?);
+  T('家庭已添加');
 }
 
 function addMemberInput(containerId){
@@ -1582,7 +1549,7 @@ function addMemberInput(containerId){
 
 function removeMemberInput(btn){
   var rows=btn.closest('#mFamMembers').querySelectorAll('.fam-member-row');
-  if(rows.length<=1){T('至少保留一名成�?);return}
+  if(rows.length<=1){T('至少保留一名成员');return}
   btn.parentElement.remove();
 }
 
@@ -1613,7 +1580,7 @@ function countAllSupplies(){
 /* ================================================================
    SUPPLIES
    ================================================================ */
-var supFamilyColors={'张旭�?:'#C8651A','小明�?:'#2E86AB','小红�?:'#A61B6E'};
+var supFamilyColors={'张旭家':'#C8651A','小明家':'#2E86AB','小红家':'#A61B6E'};
 
 function renderSupplies(){
   var families=L('families',DEFAULT_FAMILIES);
@@ -1621,9 +1588,9 @@ function renderSupplies(){
 
   // Sub-tabs
   html+='<div class="sup-subtabs">';
-  html+='<div class="sup-subtab'+(suppliesSubtab==='family'?' active':'')+'" onclick="switchSuppliesSub(\'family\')">🏕�?各家自带</div>';
+  html+='<div class="sup-subtab'+(suppliesSubtab==='family'?' active':'')+'" onclick="switchSuppliesSub(\'family\')">🏕️ 各家自带</div>';
   html+='<div class="sup-subtab'+(suppliesSubtab==='food'?' active':'')+'" onclick="switchSuppliesSub(\'food\')">🍖 公共食材</div>';
-  html+='<div class="sup-subtab'+(suppliesSubtab==='gear'?' active':'')+'" onclick="switchSuppliesSub(\'gear\')">�?公共物资</div>';
+  html+='<div class="sup-subtab'+(suppliesSubtab==='gear'?' active':'')+'" onclick="switchSuppliesSub(\'gear\')">⛺ 公共物资</div>';
   html+='</div>';
 
   // Shopping list button
@@ -1634,7 +1601,7 @@ function renderSupplies(){
   html+='<select id="supFilter" onchange="suppliesFilter=this.value;renderSupplies()">';
   html+='<option value="all"'+(suppliesFilter==='all'?' selected':'')+'>👥 全部人员</option>';
   families.forEach(function(f){
-    html+='<option value="'+esc(f.name)+'"'+(suppliesFilter===f.name?' selected':'')+'>🏕�?'+esc(f.name)+'</option>';
+    html+='<option value="'+esc(f.name)+'"'+(suppliesFilter===f.name?' selected':'')+'>🏕️ '+esc(f.name)+'</option>';
   });
   html+='</select>';
   html+='<span class="sup-progress-pill" id="supProgress"></span></div>';
@@ -1644,11 +1611,11 @@ function renderSupplies(){
 
   // Category management link (only for family tab)
   html+='<div id="supCatManage" style="margin-top:8px;display:none;text-align:right">';
-  html+='<span style="font-size:12px;color:var(--primary);cursor:pointer;font-weight:500" onclick="addCategoryModal()">�?管理分类</span></div>';
+  html+='<span style="font-size:12px;color:var(--primary);cursor:pointer;font-weight:500" onclick="addCategoryModal()">＋ 管理分类</span></div>';
 
   // Template buttons
   html+='<div style="display:flex;gap:8px;margin-top:16px">';
-  html+='<button class="btn btn-outline btn-sm" style="flex:1" onclick="saveTemplateModal()">💾 保存为模�?/button>';
+  html+='<button class="btn btn-outline btn-sm" style="flex:1" onclick="saveTemplateModal()">💾 保存为模板</button>';
   html+='<button class="btn btn-outline btn-sm" style="flex:1" onclick="loadTemplateModal()">📂 加载模板</button>';
   html+='</div>';
 
@@ -1691,7 +1658,7 @@ function renderSuppliesContent(){
 
     var catsOrder=Object.keys(catMap);
     if(catsOrder.length===0){
-      html='<div style="text-align:center;padding:40px;color:var(--text3)">暂无物资，点击右下角 �?添加</div>';
+      html='<div style="text-align:center;padding:40px;color:var(--text3)">暂无物资，点击右下角 ＋ 添加</div>';
     } else {
       catsOrder.forEach(function(cat,ci){
         if(ci>0)html+='<div class="sup-divider"></div>';
@@ -1705,10 +1672,10 @@ function renderSuppliesContent(){
           if(item.qty)html+='<span class="item-qty">'+esc(item.qty)+'</span>';
           html+='</div>';
           html+='<span class="item-tag">'+esc(fam)+'</span>';
-          if(item.checked)html+='<span class="item-status">√已�?/span>';
+          if(item.checked)html+='<span class="item-status">√已备</span>';
           html+='<div class="item-actions">';
           html+='<button class="btn-icon" onclick="openEditModal(\'family\',\''+esc(fam)+'\',\''+esc(cat)+'\',\''+esc(item.name)+'\')" title="编辑">✏️</button>';
-          html+='<button class="btn-icon danger" onclick="deleteFamilyItemByName(\''+esc(fam)+'\',\''+esc(cat)+'\',\''+esc(item.name)+'\')" title="删除">🗑�?/button>';
+          html+='<button class="btn-icon danger" onclick="deleteFamilyItemByName(\''+esc(fam)+'\',\''+esc(cat)+'\',\''+esc(item.name)+'\')" title="删除">🗑️</button>';
           html+='</div></div>';
         });
       });
@@ -1718,7 +1685,7 @@ function renderSuppliesContent(){
     var list=suppliesSubtab==='food'?L('publicFood',DEFAULT_PUBLIC_FOOD):L('publicGear',DEFAULT_PUBLIC_GEAR);
 
     if(list.length===0){
-      html='<div style="text-align:center;padding:40px;color:var(--text3)">暂无物资，点击右下角 �?添加</div>';
+      html='<div style="text-align:center;padding:40px;color:var(--text3)">暂无物资，点击右下角 ＋ 添加</div>';
     } else {
       list.forEach(function(cat,ci){
         html+='<div class="sup-cat-header">'+esc(cat.cat)+'</div>';
@@ -1731,10 +1698,10 @@ function renderSuppliesContent(){
           if(item.qty)html+='<span class="item-qty">'+esc(item.qty)+'</span>';
           html+='</div>';
           html+='<span class="item-tag">'+esc(item.assignee)+'</span>';
-          if(item.checked)html+='<span class="item-status">√已�?/span>';
+          if(item.checked)html+='<span class="item-status">√已备</span>';
           html+='<div class="item-actions">';
           html+='<button class="btn-icon" onclick="openEditModal(\'public\','+ci+','+i+')" title="编辑">✏️</button>';
-          html+='<button class="btn-icon danger" onclick="deletePublicItem('+ci+','+i+')" title="删除">🗑�?/button>';
+          html+='<button class="btn-icon danger" onclick="deletePublicItem('+ci+','+i+')" title="删除">🗑️</button>';
           html+='</div></div>';
         });
         if(ci<list.length-1)html+='<div class="sup-divider"></div>';
@@ -1742,7 +1709,7 @@ function renderSuppliesContent(){
     }
   }
 
-  container.innerHTML=html||'<div style="text-align:center;padding:40px;color:var(--text3)">暂无物资，点击右下角 �?添加</div>';
+  container.innerHTML=html||'<div style="text-align:center;padding:40px;color:var(--text3)">暂无物资，点击右下角 ＋ 添加</div>';
   // Show/hide category management
   var cm=document.getElementById('supCatManage');
   if(cm)cm.style.display=suppliesSubtab==='family'?'block':'none';
@@ -1826,11 +1793,11 @@ function openAddModal(){
 
     var html='<h3>添加物品</h3>';
     html+='<div class="field"><label>物品名称</label><input id="supAddName" placeholder="例：四季帐篷"></div>';
-    html+='<div class="field"><label>数量</label><input id="supAddQty" placeholder="例：1�?></div>';
+    html+='<div class="field"><label>数量</label><input id="supAddQty" placeholder="例：1顶"></div>';
     html+='<div class="field"><label>分类</label><select id="supAddCat">';
     allCats.forEach(function(c){html+='<option value="'+esc(c)+'">'+esc(c)+'</option>'});
     html+='</select></div>';
-    html+='<div class="field"><label>负责�?/label><select id="supAddFam">';
+    html+='<div class="field"><label>负责人</label><select id="supAddFam">';
     families.forEach(function(f){html+='<option value="'+esc(f.name)+'">'+esc(f.name)+'</option>'});
     html+='</select></div>';
     html+='<div class="modal-actions"><button class="btn-cancel" onclick="closeAddModal()">取消</button>';
@@ -1845,12 +1812,12 @@ function openAddModal(){
 
     var label=suppliesSubtab==='food'?'食材':'物资';
     var html='<h3>添加'+label+'</h3>';
-    html+='<div class="field"><label>名称</label><input id="supAddName" placeholder="例：牛肋�?></div>';
-    html+='<div class="field"><label>数量</label><input id="supAddQty" placeholder="例：2�?></div>';
+    html+='<div class="field"><label>名称</label><input id="supAddName" placeholder="例：牛肋条"></div>';
+    html+='<div class="field"><label>数量</label><input id="supAddQty" placeholder="例：2斤"></div>';
     html+='<div class="field"><label>分类</label><select id="supAddCat">';
     catNames.forEach(function(c){html+='<option value="'+esc(c)+'">'+esc(c)+'</option>'});
     html+='<option value="__new__">+ 新建分类</option></select></div>';
-    html+='<div class="field"><label>负责�?/label><select id="supAddFam">';
+    html+='<div class="field"><label>负责人</label><select id="supAddFam">';
     families.forEach(function(f){html+='<option value="'+esc(f.name)+'">'+esc(f.name)+'</option>'});
     html+='</select></div>';
     html+='<div class="modal-actions"><button class="btn-cancel" onclick="closeAddModal()">取消</button>';
@@ -1892,7 +1859,7 @@ function saveNewPublicItem(){
 
   // Handle new category
   if(cat==='__new__'){
-    cat=name+'�?;
+    cat=name+'类';
   }
 
   var catObj=list.find(function(c){return c.cat===cat});
@@ -1932,7 +1899,7 @@ function openEditModal(type,arg1,arg2,arg3){
     var html='<h3>编辑</h3>';
     html+='<div class="field"><label>名称</label><input id="supEditName" value="'+esc(item.name)+'"></div>';
     html+='<div class="field"><label>数量</label><input id="supEditQty" value="'+esc(item.qty||'')+'"></div>';
-    html+='<div class="field"><label>负责�?/label><select id="supEditFam">';
+    html+='<div class="field"><label>负责人</label><select id="supEditFam">';
     families.forEach(function(f){html+='<option value="'+esc(f.name)+'"'+(f.name===item.assignee?' selected':'')+'>'+esc(f.name)+'</option>'});
     html+='</select></div>';
     html+='<div class="modal-actions"><button class="btn-cancel" onclick="closeAddModal()">取消</button>';
@@ -1975,7 +1942,7 @@ function addCategoryModal(){
 
 function saveNewCategory(){
   var catName=document.getElementById('mCatName').value.trim();
-  if(!catName){T('请输入分类名�?);return}
+  if(!catName){T('请输入分类名称');return}
   var plan=getActivePlan();if(!plan)return;
   if(!plan.familyGear)plan.familyGear={};
   var families=plan.families||[];
@@ -1988,11 +1955,11 @@ function saveNewCategory(){
   });
   saveActivePlan(plan);
   closeModal();renderSuppliesContent();renderOverview();
-  T('分类�?+catName+'」已添加');
+  T('分类「'+catName+'」已添加');
 }
 
 function deleteCategory(catName){
-  if(!confirm('确定删除分类�?+catName+'」？所有家庭中该分类下的物品将被移除�?))return;
+  if(!confirm('确定删除分类「'+catName+'」？所有家庭中该分类下的物品将被移除。'))return;
   var plan=getActivePlan();if(!plan)return;
   if(!plan.familyGear)return;
   Object.keys(plan.familyGear).forEach(function(fam){
@@ -2000,7 +1967,7 @@ function deleteCategory(catName){
   });
   saveActivePlan(plan);
   renderSuppliesContent();renderOverview();
-  T('分类�?+catName+'」已删除');
+  T('分类「'+catName+'」已删除');
 }
 
 /* ================================================================
@@ -2027,27 +1994,27 @@ function renderExpenses(){
     html+='<span style="font-size:13px;font-weight:600">💰 预算 ¥'+budget.toFixed(0)+'</span>';
     html+='<button class="btn btn-xs btn-outline" onclick="setBudget()">修改</button></div>';
     html+='<div class="budget-bar-wrap"><div class="budget-bar '+barClass+'" style="width:'+Math.min(pct,100)+'%"></div></div>';
-    html+='<div class="budget-stats"><span>已花 ¥'+totalAll.toFixed(0)+'�?+pct.toFixed(0)+'%�?/span>';
+    html+='<div class="budget-stats"><span>已花 ¥'+totalAll.toFixed(0)+'（'+pct.toFixed(0)+'%）</span>';
     if(pct>100)html+='<span class="budget-over">超支 ¥'+(totalAll-budget).toFixed(0)+'</span>';
     html+='</div>';
   } else {
     html+='<div style="display:flex;align-items:center;justify-content:space-between">';
-    html+='<span style="font-size:13px;color:var(--text3)">💰 未设置预�?/span>';
+    html+='<span style="font-size:13px;color:var(--text3)">💰 未设置预算</span>';
     html+='<button class="btn btn-xs btn-outline" onclick="setBudget()">设置</button></div>';
   }
   html+='</div>';
 
   // Summary
   html+='<div class="exp-summary">';
-  html+='<div class="exp-sum-card"><div class="sum-num">&yen;'+totalAll.toFixed(0)+'</div><div class="sum-label">总花�?/div></div>';
+  html+='<div class="exp-sum-card"><div class="sum-num">&yen;'+totalAll.toFixed(0)+'</div><div class="sum-label">总花费</div></div>';
   html+='<div class="exp-sum-card"><div class="sum-num">&yen;'+totalAA.toFixed(0)+'</div><div class="sum-label">计入AA</div></div>';
   html+='<div class="exp-sum-card"><div class="sum-num">&yen;'+perFamily.toFixed(0)+'</div><div class="sum-label">每方均摊</div></div>';
-  html+='<div class="exp-sum-card"><div class="sum-num">'+families.length+'</div><div class="sum-label">结算�?/div></div>';
+  html+='<div class="exp-sum-card"><div class="sum-num">'+families.length+'</div><div class="sum-label">结算方</div></div>';
   html+='</div>';
 
   // Expense list
   html+='<div class="card-title">💳 花费明细 ';
-  html+='<button class="btn btn-xs btn-outline" style="margin-left:auto" onclick="addExpenseModal()">+ 记一�?/button></div>';
+  html+='<button class="btn btn-xs btn-outline" style="margin-left:auto" onclick="addExpenseModal()">+ 记一笔</button></div>';
   expenses.forEach(function(e,i){
     html+='<div class="exp-item">';
     html+='<div class="exp-purpose">'+esc(e.purpose)+'</div>';
@@ -2055,7 +2022,7 @@ function renderExpenses(){
     html+='<div class="exp-payer">'+esc(e.payer)+' 垫付</div>';
     html+='<span class="exp-aa '+(e.inAA?'in':'out')+'" onclick="toggleExpenseAA('+i+')">'+(e.inAA?'⚖️ AA':'不计')+'</span>';
     html+='<button class="btn-icon" onclick="editExpenseModal('+i+')">✏️</button>';
-    html+='<button class="btn-icon danger" onclick="deleteExpense('+i+')">🗑�?/button>';
+    html+='<button class="btn-icon danger" onclick="deleteExpense('+i+')">🗑️</button>';
     html+='</div>';
   });
 
@@ -2070,13 +2037,13 @@ function deleteExpense(i){
 }
 function addExpenseModal(){
   var families=L('families',DEFAULT_FAMILIES);
-  var html=modalField('用�?,'<input id="mExpPurpose" placeholder="如：食材采购">');
+  var html=modalField('用途','<input id="mExpPurpose" placeholder="如：食材采购">');
   html+=modalField('金额 (¥)','<input id="mExpAmount" type="number" step="0.01" min="0" placeholder="0.00">');
-  html+=modalField('垫付�?,'<select id="mExpPayer">'+families.map(function(f){return '<option value="'+esc(f.name)+'">'+esc(f.name)+'</option>'}).join('')+'</select>');
-  html+=modalField('计入AA','<select id="mExpAA"><option value="1">�?⚖️</option><option value="0">�?/option></select>');
+  html+=modalField('垫付人','<select id="mExpPayer">'+families.map(function(f){return '<option value="'+esc(f.name)+'">'+esc(f.name)+'</option>'}).join('')+'</select>');
+  html+=modalField('计入AA','<select id="mExpAA"><option value="1">是 ⚖️</option><option value="0">否</option></select>');
   html+='<div class="modal-actions"><button class="btn btn-outline" onclick="closeModal()">取消</button>';
   html+='<button class="btn btn-primary" onclick="saveNewExpense()">保存</button></div>';
-  openModal('记一笔花�?,html);
+  openModal('记一笔花费',html);
 }
 function saveNewExpense(){
   var purpose=document.getElementById('mExpPurpose').value.trim();
@@ -2089,10 +2056,10 @@ function saveNewExpense(){
 function editExpenseModal(i){
   var e=L('expenses',DEFAULT_EXPENSES)[i];
   var families=L('families',DEFAULT_FAMILIES);
-  var html=modalField('用�?,'<input id="mExpPurpose" value="'+esc(e.purpose)+'">');
+  var html=modalField('用途','<input id="mExpPurpose" value="'+esc(e.purpose)+'">');
   html+=modalField('金额 (¥)','<input id="mExpAmount" type="number" step="0.01" min="0" value="'+e.amount.toFixed(2)+'">');
-  html+=modalField('垫付�?,'<select id="mExpPayer">'+families.map(function(f){return '<option value="'+esc(f.name)+'"'+(f.name===e.payer?' selected':'')+'>'+esc(f.name)+'</option>'}).join('')+'</select>');
-  html+=modalField('计入AA','<select id="mExpAA"><option value="1"'+(e.inAA?' selected':'')+'>�?⚖️</option><option value="0"'+(e.inAA?'':' selected')+'>�?/option></select>');
+  html+=modalField('垫付人','<select id="mExpPayer">'+families.map(function(f){return '<option value="'+esc(f.name)+'"'+(f.name===e.payer?' selected':'')+'>'+esc(f.name)+'</option>'}).join('')+'</select>');
+  html+=modalField('计入AA','<select id="mExpAA"><option value="1"'+(e.inAA?' selected':'')+'>是 ⚖️</option><option value="0"'+(e.inAA?'':' selected')+'>否</option></select>');
   html+='<div class="modal-actions"><button class="btn btn-outline" onclick="closeModal()">取消</button>';
   html+='<button class="btn btn-primary" onclick="saveEditExpense('+i+')">保存</button></div>';
   openModal('编辑花费',html);
@@ -2119,16 +2086,16 @@ function renderAA(){
   var html='';
   // Sub-tabs
   html+='<div class="sup-subtabs">';
-  html+='<div class="sup-subtab'+(aaMode==='family'?' active':'')+'" onclick="aaMode=\'family\';renderAA()">🏠 按家庭均�?/div>';
-  html+='<div class="sup-subtab'+(aaMode==='person'?' active':'')+'" onclick="aaMode=\'person\';renderAA()">👤 按人头均�?/div>';
+  html+='<div class="sup-subtab'+(aaMode==='family'?' active':'')+'" onclick="aaMode=\'family\';renderAA()">🏠 按家庭均摊</div>';
+  html+='<div class="sup-subtab'+(aaMode==='person'?' active':'')+'" onclick="aaMode=\'person\';renderAA()">👤 按人头均摊</div>';
   html+='</div>';
 
   // Summary
   var nUnits=aaMode==='family'?families.length:families.reduce(function(s,f){return s+f.members.length},0);
   var perUnit=totalAA/nUnits;
   html+='<div class="aa-summary">';
-  html+='<div class="aa-sum-card"><div class="aa-num">&yen;'+totalAA.toFixed(0)+'</div><div class="aa-label">AA总金�?/div></div>';
-  html+='<div class="aa-sum-card"><div class="aa-num">&yen;'+perUnit.toFixed(0)+'</div><div class="aa-label">�?+(aaMode==='family'?'�?:'�?)+'均摊</div></div>';
+  html+='<div class="aa-sum-card"><div class="aa-num">&yen;'+totalAA.toFixed(0)+'</div><div class="aa-label">AA总金额</div></div>';
+  html+='<div class="aa-sum-card"><div class="aa-num">&yen;'+perUnit.toFixed(0)+'</div><div class="aa-label">每'+(aaMode==='family'?'方':'人')+'均摊</div></div>';
   html+='<div class="aa-sum-card"><div class="aa-num">'+nUnits+'</div><div class="aa-label">结算单元</div></div>';
   html+='</div>';
 
@@ -2154,21 +2121,21 @@ function renderAA(){
   Object.keys(partyData).forEach(function(name){
     var d=partyData[name];
     html+='<div class="aa-party-card">';
-    html+='<div class="party-header"><span class="party-name">🏕�?'+esc(name)+'</span>';
-    html+='<span class="party-members">'+d.members.map(function(m){return esc(m)}).join('�?)+' ('+d.members.length+'�?</span></div>';
+    html+='<div class="party-header"><span class="party-name">🏕️ '+esc(name)+'</span>';
+    html+='<span class="party-members">'+d.members.map(function(m){return esc(m)}).join('、')+' ('+d.members.length+'人)</span></div>';
     html+='<div class="aa-party-row"><span class="label">垫付金额</span><span class="val">&yen;'+d.advanced.toFixed(2)+'</span></div>';
     html+='<div class="aa-party-row"><span class="label">应摊金额</span><span class="val">&yen;'+d.share.toFixed(2)+'</span></div>';
     if(Math.abs(d.net)<0.01){
-      html+='<div class="aa-party-status zero">�?已平账，无需结算</div>';
+      html+='<div class="aa-party-status zero">✅ 已平账，无需结算</div>';
     } else if(d.net>0){
-      html+='<div class="aa-party-status receive">💚 待收�?&yen;'+d.net.toFixed(2)+'</div>';
+      html+='<div class="aa-party-status receive">💚 待收款 &yen;'+d.net.toFixed(2)+'</div>';
     } else {
-      html+='<div class="aa-party-status pay">❤️ 待付�?&yen;'+Math.abs(d.net).toFixed(2)+'</div>';
+      html+='<div class="aa-party-status pay">❤️ 待付款 &yen;'+Math.abs(d.net).toFixed(2)+'</div>';
     }
     html+='</div>';
   });
 
-  // Transfer plan �?minimum transfer count via sorted greedy
+  // Transfer plan — minimum transfer count via sorted greedy
   var debtors=[],creditors=[];
   Object.keys(partyData).forEach(function(name){
     var d=partyData[name];
@@ -2186,7 +2153,7 @@ function renderAA(){
       var d=debtors[di],c=creditors[ci];
       var transfer=Math.min(d.amount,c.amount);
       html+='<div class="aa-transfer-item">';
-      html+='<span class="from">'+esc(d.name)+'</span> <span class="arrow-tf">�?/span> <span class="to">'+esc(c.name)+'</span>';
+      html+='<span class="from">'+esc(d.name)+'</span> <span class="arrow-tf">→</span> <span class="to">'+esc(c.name)+'</span>';
       html+='<span class="amount-tf">&yen;'+transfer.toFixed(2)+'</span></div>';
       d.amount-=transfer;c.amount-=transfer;
       if(d.amount<0.001)di++;
@@ -2195,9 +2162,9 @@ function renderAA(){
     html+='</div>';
   } else {
     if(totalAA===0){
-      html+='<div style="text-align:center;padding:20px;color:var(--text3)">暂无 AA 费用，请先在 💰花费 中添加计入AA的支�?/div>';
+      html+='<div style="text-align:center;padding:20px;color:var(--text3)">暂无 AA 费用，请先在 💰花费 中添加计入AA的支出</div>';
     } else {
-      html+='<div style="text-align:center;padding:20px;color:var(--text3)">所有费用已平账 �?/div>';
+      html+='<div style="text-align:center;padding:20px;color:var(--text3)">所有费用已平账 ✅</div>';
     }
   }
 
@@ -2242,47 +2209,47 @@ function renderShare(){
   debtors.sort(function(a,b){return b.amount-a.amount});
   creditors.sort(function(a,b){return b.amount-a.amount});
 
-  var text='�?+esc(info.name)+'】\n';
+  var text='【'+esc(info.name)+'】\n';
   text+='📅 '+esc(info.date)+'  📍 '+esc(info.location)+'\n\n';
-  text+='👨‍👩‍👧‍�?参与人员：\n';
+  text+='👨‍👩‍👧‍👦 参与人员：\n';
   families.forEach(function(f){
-    text+='  🏕�?'+esc(f.name)+'�?+f.members.map(function(m){return esc(m)}).join('�?)+'�?+f.members.length+'人）\n';
+    text+='  🏕️ '+esc(f.name)+'：'+f.members.map(function(m){return esc(m)}).join('、')+'（'+f.members.length+'人）\n';
   });
   text+='\n📦 各家自带装备：\n';
   families.forEach(function(f){
-    text+='  🏕�?'+esc(f.name)+'：\n';
+    text+='  🏕️ '+esc(f.name)+'：\n';
     var cats=fg[f.name]||[];
     cats.forEach(function(cat){
       var items=cat.items.filter(function(it){return it.checked}).map(function(it){return it.name});
-      if(items.length>0)text+='    '+esc(cat.cat)+'�?+items.join('�?)+'\n';
+      if(items.length>0)text+='    '+esc(cat.cat)+'：'+items.join('、')+'\n';
     });
   });
   text+='\n🍖 公共食材分配：\n';
   pf.forEach(function(cat){
-    text+='  �?+esc(cat.cat)+'】\n';
-    cat.items.forEach(function(item){text+='    '+esc(item.name)+'�?+esc(item.qty)+'）→ '+esc(item.assignee)+'\n'});
+    text+='  【'+esc(cat.cat)+'】\n';
+    cat.items.forEach(function(item){text+='    '+esc(item.name)+'（'+esc(item.qty)+'）→ '+esc(item.assignee)+'\n'});
   });
-  text+='\n�?公共物资分配：\n';
+  text+='\n⛺ 公共物资分配：\n';
   pg.forEach(function(cat){
-    text+='  �?+esc(cat.cat)+'】\n';
-    cat.items.forEach(function(item){text+='    '+esc(item.name)+'�?+esc(item.qty)+'）→ '+esc(item.assignee)+'\n'});
+    text+='  【'+esc(cat.cat)+'】\n';
+    cat.items.forEach(function(item){text+='    '+esc(item.name)+'（'+esc(item.qty)+'）→ '+esc(item.assignee)+'\n'});
   });
   text+='\n💰 AA费用汇总（按家庭均摊）：\n';
-  text+='  AA总金额：¥'+totalAA.toFixed(2)+'  |  每方：�?+perFamily.toFixed(2)+'\n';
-  aaExpenses.forEach(function(e){text+='    '+esc(e.purpose)+' ¥'+e.amount.toFixed(2)+'�?+esc(e.payer)+'垫付）\n'});
+  text+='  AA总金额：¥'+totalAA.toFixed(2)+'  |  每方：¥'+perFamily.toFixed(2)+'\n';
+  aaExpenses.forEach(function(e){text+='    '+esc(e.purpose)+' ¥'+e.amount.toFixed(2)+'（'+esc(e.payer)+'垫付）\n'});
   text+='\n💳 垫付 & 转账方案：\n';
   Object.keys(partyData).forEach(function(n){
     var d=partyData[n];
     if(d.net>0.001)text+='  💚 '+esc(n)+' 垫付 ¥'+d.advanced.toFixed(2)+'，待收款 ¥'+d.net.toFixed(2)+'\n';
     else if(d.net<-0.001)text+='  ❤️ '+esc(n)+' 垫付 ¥'+d.advanced.toFixed(2)+'，待付款 ¥'+Math.abs(d.net).toFixed(2)+'\n';
-    else text+='  �?'+esc(n)+' 已平账\n';
+    else text+='  ✅ '+esc(n)+' 已平账\n';
   });
   if(debtors.length>0&&creditors.length>0){
     text+='\n  转账方案：\n';
     var di=0,ci=0,td=JSON.parse(JSON.stringify(debtors)),tc=JSON.parse(JSON.stringify(creditors));
     while(di<td.length&&ci<tc.length){
       var transfer=Math.min(td[di].amount,tc[ci].amount);
-      text+='    '+esc(td[di].name)+' �?'+esc(tc[ci].name)+'：�?+transfer.toFixed(2)+'\n';
+      text+='    '+esc(td[di].name)+' → '+esc(tc[ci].name)+'：¥'+transfer.toFixed(2)+'\n';
       td[di].amount-=transfer;tc[ci].amount-=transfer;
       if(td[di].amount<0.001)di++;if(tc[ci].amount<0.001)ci++;
     }
@@ -2306,7 +2273,7 @@ function renderShare(){
   html+='<div class="share-preview">';
   var lines=text.split('\n');
   lines.forEach(function(line){
-    if(line.startsWith('�?))html+='<div class="msg-title">'+esc(line)+'</div>';
+    if(line.startsWith('【'))html+='<div class="msg-title">'+esc(line)+'</div>';
     else if(line.match(/^[📅👨📦🍖⛺💰💳]/))html+='<div class="msg-h3">'+esc(line)+'</div>';
     else if(line.trim())html+=esc(line)+'<br>';
     else html+='<br>';
@@ -2317,7 +2284,7 @@ function renderShare(){
     html+='<div class="share-tips"><strong>⚠️ 尚未准备的物品：</strong><br>'+unprepared.map(function(u){return '· '+esc(u)}).join('<br>')+'</div>';
   }
 
-  html+='<div class="share-watermark">📱 由「露营小助手」生�?/div>';
+  html+='<div class="share-watermark">📱 由「露营小助手」生成</div>';
 
   document.getElementById('panel-share').innerHTML=html;
   window._shareText=text;
@@ -2326,11 +2293,11 @@ function renderShare(){
 function copyShareText(){
   var text=window._shareText||'';
   if(navigator.clipboard){
-    navigator.clipboard.writeText(text).then(function(){T('已复制到剪贴�?)}).catch(function(){T('复制失败，请手动复制')});
+    navigator.clipboard.writeText(text).then(function(){T('已复制到剪贴板')}).catch(function(){T('复制失败，请手动复制')});
   } else {
     var ta=document.createElement('textarea');ta.value=text;
     ta.style.position='fixed';ta.style.left='-9999px';document.body.appendChild(ta);
-    ta.select();document.execCommand('copy');document.body.removeChild(ta);T('已复制到剪贴�?);
+    ta.select();document.execCommand('copy');document.body.removeChild(ta);T('已复制到剪贴板');
   }
 }
 
@@ -2473,12 +2440,12 @@ function generateShoppingList(){
       html+='<input type="checkbox" '+(isChecked?'checked':'')+' onchange="toggleShoppingItem(\''+esc(itemKey)+'\',this.checked)">';
       html+='<div class="shop-info"><div class="shop-name'+(isChecked?' done':'')+'">'+esc(g.name)+'</div>';
       html+='<div class="shop-meta">'+esc(g.qtyStr)+'</div></div>';
-      html+='<span class="shop-source">'+esc(g.sources.join('�?))+'</span>';
+      html+='<span class="shop-source">'+esc(g.sources.join('、'))+'</span>';
       html+='</div>';
     });
   });
 
-  html+='<div class="shop-stats">已购 '+totalChecked+'/'+totalItems+' �?/div>';
+  html+='<div class="shop-stats">已购 '+totalChecked+'/'+totalItems+' 项</div>';
   openModal('🛒 购物清单',html);
 }
 
@@ -2506,7 +2473,7 @@ function renderTasks(){
     html+='<input type="checkbox" '+(t.done?'checked':'')+' onchange="toggleTask('+i+',this.checked)">';
     html+='<span class="task-text'+(t.done?' done':'')+'">'+esc(t.text)+'</span>';
     html+='<span class="task-pill" style="background:'+(supFamilyColors[t.assignee]||'#888')+'">'+esc(t.assignee)+'</span>';
-    html+='<button class="btn-icon danger" onclick="deleteTask('+i+')">🗑�?/button>';
+    html+='<button class="btn-icon danger" onclick="deleteTask('+i+')">🗑️</button>';
     html+='</div>';
   });
 
@@ -2561,7 +2528,7 @@ function saveTemplateModal(){
   var totalCount=0;
 
   Object.keys(fg).forEach(function(fam){
-    preview+='<div style="font-weight:600;color:var(--primary);margin-top:8px">🏕�?'+esc(fam)+' 自带</div>';
+    preview+='<div style="font-weight:600;color:var(--primary);margin-top:8px">🏕️ '+esc(fam)+' 自带</div>';
     (fg[fam]||[]).forEach(function(cat){
       cat.items.forEach(function(it){
         preview+='<div style="padding:2px 0;color:var(--text2)">'+esc(it.name)+(it.qty?' ×'+esc(it.qty):'')+' ['+esc(cat.cat)+']</div>';
@@ -2578,7 +2545,7 @@ function saveTemplateModal(){
     });
   });
 
-  preview+='<div style="font-weight:600;color:var(--primary);margin-top:8px">�?公共装备</div>';
+  preview+='<div style="font-weight:600;color:var(--primary);margin-top:8px">⛺ 公共装备</div>';
   pg.forEach(function(cat){
     cat.items.forEach(function(it){
       preview+='<div style="padding:2px 0;color:var(--text2)">'+esc(it.name)+' ×'+esc(it.qty)+' ['+esc(cat.cat)+']</div>';
@@ -2586,7 +2553,7 @@ function saveTemplateModal(){
     });
   });
   preview+='</div>';
-  preview+='<div style="font-size:12px;color:var(--text3);margin-bottom:12px">�?'+totalCount+' 件物�?/div>';
+  preview+='<div style="font-size:12px;color:var(--text3);margin-bottom:12px">共 '+totalCount+' 件物品</div>';
 
   if(totalCount===0){T('当前计划无物资可保存');return;}
 
@@ -2594,12 +2561,12 @@ function saveTemplateModal(){
   html+=modalField('模板名称','<input id="mTmplName" placeholder="如：夏季露营基础装备">');
   html+='<div class="modal-actions"><button class="btn btn-outline" onclick="closeModal()">取消</button>';
   html+='<button class="btn btn-primary" onclick="doSaveTemplate()">💾 保存模板</button></div>';
-  openModal('💾 保存为模�?,html);
+  openModal('💾 保存为模板',html);
 }
 
 function doSaveTemplate(){
   var name=document.getElementById('mTmplName').value.trim();
-  if(!name){T('请输入模板名�?);return;}
+  if(!name){T('请输入模板名称');return;}
 
   var plan=getActivePlan();if(!plan)return;
   var fg=plan.familyGear||{};
@@ -2622,13 +2589,13 @@ function doSaveTemplate(){
 
   pg.forEach(function(cat){
     var items=cat.items.map(function(it){return {name:it.name,quantity:it.qty}});
-    if(items.length>0)categories.push({cat:'�?'+cat.cat,items:items});
+    if(items.length>0)categories.push({cat:'⛺ '+cat.cat,items:items});
   });
 
   var templates=getTemplates();
   templates.push({name:name,categories:categories});
   saveTemplates(templates);
-  closeModal();T('模板�?+name+'」已保存');
+  closeModal();T('模板「'+name+'」已保存');
 }
 
 function loadTemplateModal(){
@@ -2640,8 +2607,8 @@ function loadTemplateModal(){
     var nItems=0;tmpl.categories.forEach(function(c){nItems+=c.items.length});
     html+='<div style="display:flex;align-items:center;padding:12px;background:var(--card);border-radius:var(--radius);margin-bottom:8px;box-shadow:var(--shadow);cursor:pointer" onclick="selectTemplate('+i+')">';
     html+='<div style="flex:1"><div style="font-weight:600;font-size:14px">'+esc(tmpl.name)+'</div>';
-    html+='<div style="font-size:12px;color:var(--text3)">'+nItems+' 件物�?· '+tmpl.categories.length+' 个分�?/div></div>';
-    html+='<button class="btn-icon danger" onclick="event.stopPropagation();deleteTemplate('+i+')" title="删除模板">🗑�?/button>';
+    html+='<div style="font-size:12px;color:var(--text3)">'+nItems+' 件物品 · '+tmpl.categories.length+' 个分类</div></div>';
+    html+='<button class="btn-icon danger" onclick="event.stopPropagation();deleteTemplate('+i+')" title="删除模板">🗑️</button>';
     html+='</div>';
   });
 
@@ -2653,8 +2620,8 @@ function selectTemplate(idx){
   var tmpl=templates[idx];
   if(!tmpl)return;
 
-  var html='<p style="margin-bottom:12px">将模�?<strong>'+esc(tmpl.name)+'</strong> 加载到：</p>';
-  html+=modalField('加载�?,'<select id="mTmplTarget"><option value="publicGear">�?公共装备</option><option value="publicFood">🍖 公共食材</option></select>');
+  var html='<p style="margin-bottom:12px">将模板 <strong>'+esc(tmpl.name)+'</strong> 加载到：</p>';
+  html+=modalField('加载到','<select id="mTmplTarget"><option value="publicGear">⛺ 公共装备</option><option value="publicFood">🍖 公共食材</option></select>');
   html+='<div class="modal-actions"><button class="btn btn-outline" onclick="closeModal()">取消</button>';
   html+='<button class="btn btn-primary" onclick="doLoadTemplate('+idx+')">📥 加载</button></div>';
   openModal('📂 加载模板',html);
@@ -2693,7 +2660,7 @@ function deleteTemplate(idx){
   templates.splice(idx,1);
   saveTemplates(templates);
   loadTemplateModal();
-  T('模板�?+name+'」已删除');
+  T('模板「'+name+'」已删除');
 }
 
 /* ================================================================
@@ -2710,11 +2677,32 @@ function setBudget(){
 
 function saveBudget(){
   var amount=parseFloat(document.getElementById('mBudgetAmount').value);
-  if(isNaN(amount)||amount<0){T('请输入有效金�?);return;}
+  if(isNaN(amount)||amount<0){T('请输入有效金额');return;}
   var plan=getActivePlan();if(!plan)return;
   plan.budget=amount;
   saveActivePlan(plan);
   closeModal();renderExpenses();
+}
+
+/* ===== Leaflet Map ===== */
+var campMap = null;
+var campMarker = null;
+function initCampMap(plan) {
+  try { if (typeof L === 'undefined') { console.warn('Leaflet 未加载，跳过地图初始化'); return; } } catch(e) { return; }
+  var el = document.getElementById('campMap');
+  if (!el) return;
+  if (campMap) { campMap.remove(); campMap = null; }
+  var lat = (plan && plan.mapConfig && plan.mapConfig.lat) ? plan.mapConfig.lat : 30.9;
+  var lng = (plan && plan.mapConfig && plan.mapConfig.lng) ? plan.mapConfig.lng : 103.5;
+  var zoom = (plan && plan.mapConfig && plan.mapConfig.zoom) ? plan.mapConfig.zoom : 13;
+  campMap = L.map(el, { attributionControl: false }).setView([lat, lng], zoom);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+  }).addTo(campMap);
+  campMarker = L.marker([lat, lng]).addTo(campMap);
+  el.addEventListener('click', function() {
+    try { window.open('https://www.openstreetmap.org/#map=' + zoom + '/' + lat + '/' + lng, '_blank'); } catch(e) {}
+  });
 }
 
 </script>
