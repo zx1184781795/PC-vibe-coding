@@ -1,0 +1,1895 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>露营小助手</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ===== Reset ===== */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#FBF5EB;--card:#fff;--primary:#C8651A;--primary-dark:#a85216;
+  --primary-light:#FFF5ED;--text:#2C1A0E;--text2:#6B5D52;--text3:#9B8D82;
+  --border:#EBE3D8;--green:#4CAF50;--red:#E53935;--green-bg:#E8F5E9;
+  --red-bg:#FFEBEE;--radius:10px;--radius-lg:16px;--shadow:0 2px 12px rgba(0,0,0,.05);
+  --shadow-lg:0 4px 24px rgba(0,0,0,.08);
+}
+html,body{height:100%;overflow:hidden}
+body{
+  font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
+  background:#ede9e2;color:var(--text);font-size:16px;line-height:1.6;
+  display:flex;justify-content:center;
+}
+#app{
+  width:100%;max-width:540px;height:100vh;height:100dvh;
+  display:flex;flex-direction:column;background:var(--bg);
+  position:relative;overflow:hidden;box-shadow:var(--shadow-lg);
+}
+/* ===== Tab Bar ===== */
+#tabbar{
+  display:flex;flex-shrink:0;background:var(--card);border-top:1px solid var(--border);
+  padding-bottom:env(safe-area-inset-bottom,0);z-index:100;
+}
+.tab{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:9px 4px 7px;cursor:pointer;font-size:11px;font-weight:500;
+  color:var(--text3);transition:color .2s;user-select:none;
+  -webkit-tap-highlight-color:transparent;gap:1px;
+}
+.tab .tab-emoji{font-size:20px;line-height:1}
+.tab.active{color:var(--primary)}
+.tab.active .tab-emoji{font-size:21px}
+/* ===== Content ===== */
+#content{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch}
+.panel{display:none;padding:0 16px 24px;min-height:100%}
+.panel.active{display:block}
+/* ===== Cards ===== */
+.card{
+  background:var(--card);border-radius:var(--radius-lg);padding:18px;
+  margin-bottom:12px;box-shadow:var(--shadow);
+}
+.card-title{
+  font-size:15px;font-weight:700;color:var(--text);margin-bottom:14px;
+  display:flex;align-items:center;gap:8px;
+}
+.card-title .icon{font-size:22px}
+/* ===== Buttons ===== */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  padding:10px 20px;border:none;border-radius:var(--radius);font-size:14px;
+  font-weight:600;cursor:pointer;transition:all .15s;font-family:inherit;
+  -webkit-tap-highlight-color:transparent;white-space:nowrap;
+}
+.btn-primary{background:var(--primary);color:#fff}
+.btn-primary:active{background:var(--primary-dark)}
+.btn-outline{background:transparent;border:1.5px solid var(--primary);color:var(--primary)}
+.btn-outline:active{background:var(--primary-light)}
+.btn-sm{padding:6px 12px;font-size:12px}
+.btn-block{width:100%;padding:12px 16px;font-size:15px}
+.btn-xs{padding:4px 10px;font-size:11px;border-radius:8px}
+.btn-icon{background:none;border:none;cursor:pointer;font-size:18px;padding:4px 6px;
+  color:var(--text3);transition:color .15s;font-family:inherit;line-height:1}
+.btn-icon:hover{color:var(--text)}
+.btn-icon.danger{color:var(--red)}
+.btn-circle{
+  width:36px;height:36px;border-radius:50%;background:var(--primary);color:#fff;
+  border:none;font-size:22px;cursor:pointer;display:flex;align-items:center;
+  justify-content:center;box-shadow:0 2px 8px rgba(200,101,26,.3);transition:all .15s;
+}
+.btn-circle:active{transform:scale(.93)}
+/* ===== Home Panel ===== */
+.home-hero{text-align:center;padding:32px 0 24px}
+.home-hero .hero-emoji{font-size:52px;line-height:1;margin-bottom:12px;display:block}
+.home-hero h1{font-size:28px;font-weight:800;color:var(--text);margin-bottom:6px}
+.home-hero p{font-size:15px;color:var(--text2)}
+.home-plan-card{
+  background:var(--card);border-radius:var(--radius-lg);padding:18px;
+  margin-bottom:12px;box-shadow:var(--shadow);cursor:pointer;
+  border:2px solid transparent;transition:border-color .2s;position:relative;
+}
+.home-plan-card:active{border-color:var(--primary)}
+.home-plan-card .plan-name{font-size:18px;font-weight:700;color:var(--text);margin-bottom:4px}
+.home-plan-card .plan-meta{font-size:13px;color:var(--text2);display:flex;gap:12px}
+.home-plan-card .plan-stats{display:flex;gap:16px;margin-top:10px;font-size:13px;color:var(--text2)}
+.home-plan-card-actions{position:absolute;top:12px;right:12px;display:flex;gap:6px;z-index:2}
+.home-plan-card-btn{width:30px;height:30px;border-radius:8px;border:none;background:rgba(0,0,0,.06);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:background .15s;-webkit-tap-highlight-color:transparent;line-height:1;padding:0}
+.home-plan-card-btn:hover{background:rgba(0,0,0,.12)}
+.home-plan-card-btn.delete-btn:hover{background:rgba(229,57,53,.15)}
+.home-plan-card-btn.export-btn:hover{background:rgba(76,175,80,.15)}
+.home-cta{text-align:center;padding:8px 0 32px}
+.home-cta .hint{font-size:13px;color:var(--text3);margin-bottom:10px}
+.home-empty{text-align:center;padding:40px 16px}
+.home-empty .empty-icon{font-size:48px;margin-bottom:12px;display:block}
+.home-empty .empty-text{font-size:15px;color:var(--text2);margin-bottom:16px}
+/* ===== Plan Switcher ===== */
+.ov-plan-header{display:flex;align-items:center;gap:8px;margin-bottom:14px}
+.plan-switcher{position:relative;flex:1;min-width:0}
+.plan-switcher-trigger{
+  display:flex;align-items:center;gap:6px;cursor:pointer;
+  padding:8px 12px;border-radius:10px;background:var(--primary-light);
+  font-size:16px;font-weight:700;color:var(--primary);user-select:none;
+  -webkit-tap-highlight-color:transparent;width:100%;
+}
+.plan-switcher-trigger .plan-trigger-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.plan-switcher-trigger .dropdown-arrow{font-size:10px;transition:transform .2s;flex-shrink:0}
+.plan-switcher-trigger .dropdown-arrow.open{transform:rotate(180deg)}
+.plan-dropdown{
+  display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;
+  background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow-lg);
+  z-index:50;overflow:hidden;max-height:280px;overflow-y:auto;
+}
+.plan-dropdown.show{display:block}
+.plan-dropdown-item{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 16px;cursor:pointer;font-size:14px;font-weight:500;
+  border-bottom:1px solid var(--border);transition:background .1s;
+}
+.plan-dropdown-item:active{background:var(--primary-light)}
+.plan-dropdown-item.active{color:var(--primary);font-weight:700}
+.plan-dropdown-item .plan-item-check{color:var(--primary);font-size:14px;margin-right:4px}
+.plan-dropdown-item .plan-item-delete{
+  color:var(--red);font-size:18px;padding:2px 6px;cursor:pointer;
+  border-radius:6px;line-height:1;
+}
+.plan-dropdown-item .plan-item-delete:active{background:var(--red-bg)}
+.plan-dropdown-add{
+  padding:12px 16px;text-align:center;color:var(--primary);font-weight:600;
+  cursor:pointer;font-size:14px;border-top:1px solid var(--border);
+}
+.plan-dropdown-add:active{background:var(--primary-light)}
+.plan-dropdown-backdrop{display:none;position:fixed;top:0;left:0;right:0;bottom:0;z-index:49}
+.plan-dropdown-backdrop.show{display:block}
+/* ===== Overview Panel ===== */
+.ov-info-row{display:flex;gap:16px;margin-bottom:5px}
+.ov-info-item{flex:1}
+.ov-info-item .label{font-size:11px;color:var(--text3);margin-bottom:2px}
+.ov-info-item .value{font-size:14px;font-weight:600;color:var(--text)}
+.ov-family-card{
+  display:flex;align-items:center;gap:12px;padding:14px;background:var(--card);
+  border-radius:var(--radius);margin-bottom:8px;box-shadow:var(--shadow);
+}
+.ov-family-card .fam-emoji{font-size:28px}
+.ov-family-card .fam-name{font-size:15px;font-weight:700;color:var(--text)}
+.ov-family-card .fam-count{font-size:12px;color:var(--text3);margin-left:auto}
+.ov-member-tag{
+  display:inline-flex;align-items:center;gap:4px;padding:5px 12px;
+  background:var(--primary-light);border-radius:20px;font-size:13px;
+  color:var(--primary);margin:3px 4px 3px 0;font-weight:500;
+}
+.ov-stats-bar{
+  display:flex;border-radius:var(--radius);overflow:hidden;margin-top:12px;
+}
+.ov-stat-item{
+  flex:1;text-align:center;padding:14px 8px;background:var(--card);
+  border-right:1px solid var(--border);
+}
+.ov-stat-item:last-child{border-right:none}
+.ov-stat-item .stat-num{font-size:22px;font-weight:800;color:var(--primary)}
+.ov-stat-item .stat-label{font-size:11px;color:var(--text3);margin-top:2px}
+.ov-map-container{position:relative;border-radius:var(--radius);overflow:hidden;margin-bottom:10px}
+.ov-map-iframe{width:100%;height:260px;border:none;display:block}
+.ov-map-inputs{margin-top:12px}
+.ov-map-input-row{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+.ov-map-input-row label{font-size:12px;color:var(--text2);white-space:nowrap;min-width:42px}
+.ov-map-input-row input{
+  flex:1;padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;
+  font-size:13px;font-family:inherit;background:var(--card);color:var(--text);
+  min-width:0;
+}
+.ov-map-input-row input:focus{outline:none;border-color:var(--primary)}
+/* ===== Weather Card ===== */
+.weather-card{
+  background:linear-gradient(135deg,#E8F4FD 0%,#F0F7FF 100%);
+  border-radius:var(--radius-lg);padding:18px;margin-bottom:12px;
+  box-shadow:var(--shadow);
+}
+.weather-header{
+  display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;
+}
+.weather-title{font-size:15px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:6px}
+.weather-refresh{
+  font-size:12px;color:var(--primary);cursor:pointer;padding:4px 8px;
+  border-radius:6px;transition:background .15s;user-select:none;
+  -webkit-tap-highlight-color:transparent;
+}
+.weather-refresh:active{background:rgba(200,101,26,.1)}
+.weather-current{display:flex;align-items:center;gap:14px;margin-bottom:16px}
+.weather-temp-main{font-size:42px;font-weight:800;color:var(--text);line-height:1}
+.weather-curr-info{flex:1}
+.weather-desc{font-size:15px;font-weight:600;color:var(--text);margin-bottom:4px}
+.weather-details{font-size:12px;color:var(--text2);display:flex;gap:12px}
+.weather-forecast{display:flex;gap:8px;border-top:1px solid rgba(0,0,0,.06);padding-top:14px}
+.weather-day{
+  flex:1;text-align:center;padding:8px 4px;background:rgba(255,255,255,.5);
+  border-radius:10px;
+}
+.weather-day .day-name{font-size:11px;color:var(--text3);margin-bottom:6px}
+.weather-day .day-icon{font-size:22px;line-height:1;margin-bottom:6px}
+.weather-day .day-temps{font-size:11px;color:var(--text);font-weight:600}
+.weather-day .day-temps .low{color:var(--text3);font-weight:400}
+.weather-error{text-align:center;padding:20px;color:var(--text3);font-size:13px}
+.weather-error .retry-link{color:var(--primary);cursor:pointer;text-decoration:underline}
+/* ===== Skeleton Loading ===== */
+@keyframes shimmer{0%{background-position:-200px 0}100%{background-position:calc(200px + 100%) 0}}
+.skeleton-line{
+  height:14px;background:linear-gradient(90deg,#e0e8f0 25%,#eef3f8 50%,#e0e8f0 75%);
+  background-size:200px 100%;animation:shimmer 1.5s infinite;border-radius:4px;margin-bottom:10px;width:60%;
+}
+.skeleton-line-lg{height:24px;width:40%}
+.skeleton-row{display:flex;gap:8px;margin-top:12px}
+.skeleton-day{flex:1;height:56px;background:linear-gradient(90deg,#e0e8f0 25%,#eef3f8 50%,#e0e8f0 75%);background-size:200px 100%;animation:shimmer 1.5s infinite;border-radius:10px}
+/* ===== Supplies Panel ===== */
+.sup-subtabs{display:flex;gap:6px;margin-bottom:14px}
+.sup-subtab{
+  flex:1;padding:10px 6px;text-align:center;background:var(--card);
+  border-radius:var(--radius);cursor:pointer;font-size:13px;font-weight:600;
+  border:1.5px solid var(--border);transition:all .15s;user-select:none;color:var(--text2);
+}
+.sup-subtab.active{background:var(--primary-light);border-color:var(--primary);color:var(--primary)}
+.sup-filter-row{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.sup-filter-row select{
+  flex:1;padding:9px 12px;border:1.5px solid var(--border);border-radius:var(--radius);
+  font-size:13px;font-family:inherit;background:var(--card);color:var(--text);
+}
+.sup-progress{
+  font-size:13px;color:var(--primary);font-weight:600;white-space:nowrap;
+}
+.sup-cat-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 14px;margin-bottom:6px;font-size:14px;font-weight:700;color:var(--text);
+}
+.sup-item{
+  display:flex;align-items:center;gap:10px;padding:12px 14px;
+  background:var(--card);border-radius:var(--radius);margin-bottom:6px;
+  box-shadow:0 1px 3px rgba(0,0,0,.03);
+}
+.sup-item input[type=checkbox]{width:18px;height:18px;accent-color:var(--primary);flex-shrink:0}
+.sup-item .item-info{flex:1;min-width:0}
+.sup-item .item-name{font-size:14px;font-weight:500;color:var(--text)}
+.sup-item .item-name.done{text-decoration:line-through;color:var(--text3)}
+.sup-item .item-qty{font-size:12px;color:var(--text3);margin-top:1px}
+.sup-item .item-tag{
+  display:inline-block;padding:2px 10px;background:var(--primary-light);
+  border-radius:10px;font-size:11px;color:var(--primary);font-weight:500;
+}
+.sup-item .item-actions{display:flex;gap:2px;flex-shrink:0}
+.sup-add-row{display:flex;gap:8px;margin-top:8px;align-items:center}
+.sup-add-row input{
+  flex:1;padding:9px 12px;border:1.5px dashed var(--border);border-radius:var(--radius);
+  font-size:13px;font-family:inherit;background:transparent;color:var(--text);
+}
+.sup-add-row input:focus{outline:none;border-color:var(--primary)}
+.sup-add-row select{padding:9px;border:1.5px solid var(--border);border-radius:var(--radius);
+  font-size:13px;font-family:inherit;background:var(--card);color:var(--text)}
+/* ===== Expenses Panel ===== */
+.exp-summary{
+  display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;
+}
+.exp-sum-card{
+  background:var(--card);border-radius:var(--radius);padding:14px;
+  box-shadow:var(--shadow);text-align:center;
+}
+.exp-sum-card .sum-num{font-size:22px;font-weight:800;color:var(--primary)}
+.exp-sum-card .sum-label{font-size:11px;color:var(--text3);margin-top:2px}
+.exp-sum-card.full{grid-column:1/-1}
+.exp-item{
+  display:flex;align-items:center;gap:10px;padding:13px 14px;
+  background:var(--card);border-radius:var(--radius);margin-bottom:8px;
+  box-shadow:0 1px 3px rgba(0,0,0,.03);
+}
+.exp-item .exp-purpose{flex:1;font-size:14px;font-weight:500}
+.exp-item .exp-amount{font-size:16px;font-weight:700;color:var(--primary);white-space:nowrap}
+.exp-item .exp-payer{font-size:12px;color:var(--text2);white-space:nowrap}
+.exp-item .exp-aa{
+  display:inline-flex;align-items:center;gap:3px;padding:3px 8px;
+  border-radius:10px;font-size:11px;font-weight:600;cursor:pointer;user-select:none;
+}
+.exp-item .exp-aa.in{background:var(--green-bg);color:var(--green)}
+.exp-item .exp-aa.out{background:var(--red-bg);color:var(--red)}
+/* ===== AA Panel ===== */
+.aa-summary{display:flex;gap:10px;margin-bottom:14px}
+.aa-sum-card{
+  flex:1;background:var(--card);border-radius:var(--radius);padding:14px;
+  box-shadow:var(--shadow);text-align:center;
+}
+.aa-sum-card .aa-num{font-size:20px;font-weight:800;color:var(--primary)}
+.aa-sum-card .aa-label{font-size:11px;color:var(--text3);margin-top:2px}
+.aa-party-card{
+  background:var(--card);border-radius:var(--radius-lg);padding:16px;margin-bottom:10px;
+  box-shadow:var(--shadow);
+}
+.aa-party-card .party-header{
+  display:flex;align-items:center;gap:8px;margin-bottom:10px;
+}
+.aa-party-card .party-name{font-size:16px;font-weight:700;color:var(--text)}
+.aa-party-card .party-members{font-size:12px;color:var(--text3)}
+.aa-party-row{display:flex;justify-content:space-between;padding:6px 0;font-size:13px}
+.aa-party-row .label{color:var(--text2)}
+.aa-party-row .val{font-weight:600}
+.aa-party-status{
+  margin-top:8px;padding:8px 12px;border-radius:var(--radius);font-size:13px;font-weight:600;
+}
+.aa-party-status.receive{background:var(--green-bg);color:var(--green)}
+.aa-party-status.pay{background:var(--red-bg);color:var(--red)}
+.aa-party-status.zero{background:#f5f5f5;color:var(--text3)}
+.aa-transfer{
+  background:var(--card);border-radius:var(--radius-lg);padding:16px;
+  margin-top:12px;box-shadow:var(--shadow);
+}
+.aa-transfer h4{font-size:14px;font-weight:700;margin-bottom:10px;color:var(--text)}
+.aa-transfer-item{
+  display:flex;align-items:center;gap:8px;padding:10px 0;
+  border-bottom:1px solid var(--border);font-size:14px;
+}
+.aa-transfer-item:last-child{border-bottom:none}
+.aa-transfer-item .from{font-weight:600;color:var(--red)}
+.aa-transfer-item .to{font-weight:600;color:var(--green)}
+.aa-transfer-item .arrow-tf{color:var(--text3)}
+.aa-transfer-item .amount-tf{font-weight:700;color:var(--primary);margin-left:auto}
+/* ===== Share Panel ===== */
+.share-actions{display:flex;gap:8px;margin-bottom:14px}
+.share-preview{
+  background:#EDEDED;border-radius:var(--radius-lg);padding:16px;
+  font-size:13px;line-height:1.9;max-height:60vh;overflow-y:auto;
+  font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+}
+.share-preview .msg-title{font-size:16px;font-weight:700;text-align:center;margin-bottom:8px}
+.share-preview .msg-section{margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #ddd}
+.share-preview .msg-section:last-child{border-bottom:none}
+.share-preview .msg-h3{font-weight:700;color:#576b95;margin-bottom:4px;font-size:14px}
+.share-tips{
+  margin-top:12px;padding:12px 14px;background:var(--primary-light);
+  border-radius:var(--radius);font-size:13px;color:var(--text2);
+}
+.share-watermark{
+  text-align:center;font-size:12px;color:var(--text3);margin-top:14px;
+}
+/* ===== Modal ===== */
+.modal-overlay{
+  display:none;position:fixed;top:0;left:0;right:0;bottom:0;
+  background:rgba(0,0,0,.4);z-index:200;align-items:flex-end;justify-content:center;
+}
+.modal-overlay.active{display:flex}
+.modal-sheet{
+  background:var(--card);border-radius:var(--radius-lg) var(--radius-lg) 0 0;
+  width:100%;max-width:540px;max-height:80vh;overflow-y:auto;padding:20px 18px;
+  padding-bottom:calc(20px + env(safe-area-inset-bottom, 0));
+}
+.modal-sheet h3{font-size:18px;font-weight:700;margin-bottom:16px;color:var(--text)}
+.modal-field{margin-bottom:14px}
+.modal-field label{display:block;font-size:13px;font-weight:600;color:var(--text2);margin-bottom:6px}
+.modal-field input,.modal-field select,.modal-field textarea{
+  width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:var(--radius);
+  font-size:14px;font-family:inherit;background:var(--card);color:var(--text);
+}
+.modal-field input:focus,.modal-field select:focus,.modal-field textarea:focus{outline:none;border-color:var(--primary)}
+.modal-field textarea{resize:vertical;min-height:80px}
+.modal-actions{display:flex;gap:10px;margin-top:18px}
+.modal-actions .btn{flex:1}
+/* ===== Toast ===== */
+.toast{
+  position:fixed;top:24px;left:50%;transform:translateX(-50%);
+  background:var(--text);color:#fff;padding:10px 24px;
+  border-radius:20px;font-size:14px;font-weight:600;z-index:300;
+  box-shadow:0 4px 20px rgba(0,0,0,.15);animation:toastIn .3s ease;
+  pointer-events:none;
+}
+@keyframes toastIn{from{opacity:0;transform:translateX(-50%) translateY(-10px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+/* ===== Scrollbar ===== */
+#content::-webkit-scrollbar{width:4px}
+#content::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+</style>
+</head>
+<body>
+<div id="app">
+  <!-- Tab Bar -->
+  <nav id="tabbar">
+    <div class="tab" data-tab="home"><span class="tab-emoji">🏠</span>首页</div>
+    <div class="tab" data-tab="overview"><span class="tab-emoji">🗺️</span>概况</div>
+    <div class="tab" data-tab="supplies"><span class="tab-emoji">📦</span>物资</div>
+    <div class="tab" data-tab="expenses"><span class="tab-emoji">💰</span>花费</div>
+    <div class="tab" data-tab="aa"><span class="tab-emoji">⚖️</span>AA</div>
+    <div class="tab" data-tab="share"><span class="tab-emoji">💬</span>分享</div>
+  </nav>
+  <main id="content">
+    <!-- ===== HOME (保留但不在 TabBar 显示) ===== -->
+    <div id="panel-home" class="panel"></div>
+    <!-- ===== OVERVIEW ===== -->
+    <div id="panel-overview" class="panel"></div>
+    <!-- ===== SUPPLIES ===== -->
+    <div id="panel-supplies" class="panel"></div>
+    <!-- ===== EXPENSES ===== -->
+    <div id="panel-expenses" class="panel"></div>
+    <!-- ===== AA ===== -->
+    <div id="panel-aa" class="panel"></div>
+    <!-- ===== SHARE ===== -->
+    <div id="panel-share" class="panel"></div>
+  </main>
+</div>
+<!-- Modal -->
+<div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal-sheet" id="modalSheet"></div>
+</div>
+<!-- Plan Dropdown Backdrop -->
+<div class="plan-dropdown-backdrop" id="planDropdownBackdrop" onclick="closePlanDropdown()"></div>
+<!-- Toast -->
+<div class="toast" id="toast" style="display:none"></div>
+
+<script>
+/* ================================================================
+   DATA MODEL — MULTI-PLAN SUPPORT
+   ================================================================ */
+function readPlans(){
+  try{var v=localStorage.getItem('camping_plans');return v?JSON.parse(v):[]}catch(e){return[]}
+}
+function savePlans(plans){try{localStorage.setItem('camping_plans',JSON.stringify(plans))}catch(e){}}
+function activePlanIdx(){
+  var idx=parseInt(localStorage.getItem('camping_activePlan')||'0');if(isNaN(idx))idx=0;
+  var plans=readPlans();if(idx>=plans.length)idx=0;return idx;
+}
+function setActivePlanIdx(idx){localStorage.setItem('camping_activePlan',String(idx))}
+function getActivePlan(){
+  var plans=readPlans();var idx=activePlanIdx();return plans[idx]||null;
+}
+function saveActivePlan(plan){
+  var plans=readPlans();var idx=activePlanIdx();
+  if(idx<plans.length){plans[idx]=plan;savePlans(plans)}
+}
+
+// L / S — now proxy through active plan
+function L(k,d){
+  try{
+    var p=getActivePlan();if(p&&(k in p))return p[k];
+    // fallback: read raw localStorage (backward compat during migration)
+    var v=localStorage.getItem('camping_'+k);return v?JSON.parse(v):d;
+  }catch(e){return d}
+}
+function S(k,v){
+  try{
+    var p=getActivePlan();if(p){p[k]=v;saveActivePlan(p);return}
+  }catch(e){}
+  try{localStorage.setItem('camping_'+k,JSON.stringify(v))}catch(e){}
+}
+
+/* ===== PRESET DATA ===== */
+var DEFAULT_INFO = {name:'周末露营',date:'5月31日 - 6月1日',location:'成都 · 青城山'};
+
+var DEFAULT_FAMILIES = [
+  {name:'张旭家',members:['张旭','崔丽']},
+  {name:'小明家',members:['小明','小红','宝宝']},
+  {name:'小红家',members:['小红','小萍']}
+];
+
+var DEFAULT_FAMILY_GEAR = {
+  '张旭家':[
+    {cat:'睡眠装备',items:[
+      {name:'帐篷',checked:true},{name:'睡袋×2',checked:true},{name:'防潮垫×2',checked:true},
+      {name:'充气垫×2',checked:false},{name:'露营枕×2',checked:true}
+    ]},
+    {cat:'炊具餐具',items:[
+      {name:'卡式炉',checked:true},{name:'气罐×4',checked:true},{name:'锅具套装',checked:true},
+      {name:'餐具套装',checked:true},{name:'保温箱',checked:false}
+    ]},
+    {cat:'其他',items:[
+      {name:'折叠椅×2',checked:true},{name:'头灯',checked:true},{name:'充电宝',checked:true},
+      {name:'垃圾袋',checked:true},{name:'湿巾纸巾',checked:true}
+    ]}
+  ],
+  '小明家':[
+    {cat:'睡眠装备',items:[
+      {name:'家庭帐篷',checked:true},{name:'睡袋×3',checked:true},{name:'防潮垫×3',checked:false},
+      {name:'充气垫×3',checked:true},{name:'露营枕×3',checked:true},{name:'保暖毯',checked:true}
+    ]},
+    {cat:'炊具餐具',items:[
+      {name:'烧水壶',checked:true},{name:'保温壶',checked:true},{name:'一次性手套',checked:true}
+    ]},
+    {cat:'其他',items:[
+      {name:'折叠桌',checked:true},{name:'天幕',checked:true},{name:'蓝牙音箱',checked:true},
+      {name:'急救包',checked:true},{name:'驱蚊液',checked:true}
+    ]}
+  ],
+  '小红家':[
+    {cat:'睡眠装备',items:[
+      {name:'双人帐篷',checked:true},{name:'睡袋×2',checked:false},{name:'防潮垫×2',checked:true},
+      {name:'充气垫×2',checked:true}
+    ]},
+    {cat:'炊具餐具',items:[
+      {name:'砧板+刀具',checked:true},{name:'洗洁精',checked:true},{name:'洗碗布',checked:true}
+    ]},
+    {cat:'其他',items:[
+      {name:'折叠椅×2',checked:true},{name:'防水袋',checked:true},{name:'相机',checked:false},
+      {name:'遮阳帽',checked:true},{name:'防晒霜',checked:true}
+    ]}
+  ]
+};
+
+var DEFAULT_GEAR_CATEGORIES = ['睡眠装备', '炊具餐具', '其他'];
+
+var DEFAULT_PUBLIC_FOOD = [
+  {cat:'肉类',items:[
+    {name:'肥牛卷',qty:'500g',assignee:'张旭'},{name:'羊肉卷',qty:'400g',assignee:'小明'},
+    {name:'鸡翅中',qty:'12个',assignee:'小红'},{name:'虾滑',qty:'300g',assignee:'张旭'},
+    {name:'火锅丸子',qty:'400g',assignee:'小明'}
+  ]},
+  {cat:'蔬菜',items:[
+    {name:'蔬菜拼盘',qty:'1份',assignee:'小红'},{name:'菌菇拼盘',qty:'1份',assignee:'张旭'},
+    {name:'玉米',qty:'6根',assignee:'小明'},{name:'豆腐+豆皮',qty:'1份',assignee:'小红'}
+  ]},
+  {cat:'调料',items:[
+    {name:'火锅底料',qty:'2包',assignee:'张旭'},{name:'蘸料套装',qty:'1份',assignee:'小明'},
+    {name:'烧烤酱',qty:'1瓶',assignee:'小红'}
+  ]},
+  {cat:'饮品',items:[
+    {name:'饮料大瓶',qty:'3瓶',assignee:'小明'},{name:'矿泉水',qty:'24瓶',assignee:'张旭'},
+    {name:'啤酒',qty:'12罐',assignee:'小红'},{name:'茶包/咖啡',qty:'1份',assignee:'张旭'}
+  ]}
+];
+
+var DEFAULT_PUBLIC_GEAR = [
+  {cat:'睡眠装备',items:[
+    {name:'天幕',qty:'1个',assignee:'小明'},{name:'地布',qty:'2张',assignee:'张旭'},
+    {name:'帐篷灯串',qty:'1套',assignee:'小红'}
+  ]},
+  {cat:'炊具装备',items:[
+    {name:'卡式炉',qty:'2个',assignee:'张旭'},{name:'丁烷气罐',qty:'8罐',assignee:'小明'},
+    {name:'锅具套装',qty:'1套',assignee:'小红'},{name:'烧水壶',qty:'1个',assignee:'小明'},
+    {name:'保温箱',qty:'1个',assignee:'张旭'},{name:'折叠水桶',qty:'2个',assignee:'小红'}
+  ]},
+  {cat:'照明装备',items:[
+    {name:'露营主灯',qty:'2个',assignee:'张旭'},{name:'头灯',qty:'3个',assignee:'小明'},
+    {name:'手电筒',qty:'2个',assignee:'小红'},{name:'备用电池',qty:'1套',assignee:'张旭'}
+  ]},
+  {cat:'桌椅装备',items:[
+    {name:'折叠桌',qty:'2张',assignee:'小明'},{name:'折叠椅',qty:'6把',assignee:'小明'},
+    {name:'野餐垫',qty:'2张',assignee:'小红'}
+  ]},
+  {cat:'其他',items:[
+    {name:'垃圾袋',qty:'1卷',assignee:'张旭'},{name:'纸巾+湿巾',qty:'1份',assignee:'小红'},
+    {name:'急救包',qty:'1个',assignee:'小明'},{name:'驱蚊液',qty:'2瓶',assignee:'张旭'},
+    {name:'户外刀具',qty:'1把',assignee:'小明'},{name:'蓝牙音箱',qty:'1个',assignee:'小明'}
+  ]}
+];
+
+var DEFAULT_EXPENSES = [
+  {purpose:'食材采购',amount:350,payer:'张旭',inAA:true},
+  {purpose:'营地费',amount:200,payer:'小明',inAA:true},
+  {purpose:'油费过路费',amount:150,payer:'小红',inAA:true},
+  {purpose:'木炭+烧烤架',amount:80,payer:'张旭',inAA:true},
+  {purpose:'个人零食(不计AA)',amount:45,payer:'小明',inAA:false}
+];
+
+var DEFAULT_ITINERARY = [
+  {day:'周六',time:'08:00',title:'集合出发',desc:'在市区集合点集合，检查装备物资，分发对讲机'},
+  {day:'周六',time:'10:30',title:'抵达营地',desc:'驱车到达青城山露营地，停车卸装备'},
+  {day:'周六',time:'11:00',title:'搭建营地',desc:'搭建帐篷、天幕，布置生活区和炊事区'},
+  {day:'周六',time:'12:00',title:'午餐时间',desc:'简单午餐，休整。准备下午活动'},
+  {day:'周六',time:'14:00',title:'自由活动',desc:'徒步探索、钓鱼、拍照等自由活动'},
+  {day:'周六',time:'17:00',title:'准备晚餐',desc:'生火、准备食材，开始火锅+烧烤'},
+  {day:'周六',time:'19:00',title:'篝火晚会',desc:'篝火、音乐、星空、聊天'},
+  {day:'周日',time:'08:00',title:'早餐',desc:'简单早餐，收拾个人物品'},
+  {day:'周日',time:'10:00',title:'拔营返程',desc:'收拾装备，清理营地垃圾，拍合影后出发返回'}
+];
+
+function makeDefaultPlan(name, info, families, familyGear, expenses, publicFood, publicGear, itinerary){
+  return {
+    name:name||'我的露营',
+    info:info||{name:'未命名',date:'待定',location:'待定'},
+    families:families||DEFAULT_FAMILIES,
+    familyGear:familyGear||DEFAULT_FAMILY_GEAR,
+    expenses:expenses||[],
+    publicFood:publicFood||[],
+    publicGear:publicGear||[],
+    itinerary:itinerary||[],
+    mapConfig:{lng:116.67,lat:40.58,name:'北京怀柔白河湾'}
+  };
+}
+
+/* ===== STATE ===== */
+var currentTab = 'home';
+var suppliesSubtab = 'family';
+var suppliesFilter = 'all';
+var aaMode = 'family';
+var editingId = null;
+var weatherData = null;
+var weatherLoading = false;
+
+/* ===== HELPERS ===== */
+function T(msg){
+  var t=document.getElementById('toast');t.textContent=msg;t.style.display='block';
+  clearTimeout(t._t);t._t=setTimeout(function(){t.style.display='none'},2000);
+}
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function deepClone(o){return JSON.parse(JSON.stringify(o))}
+
+/* ================================================================
+   PLAN MANAGEMENT
+   ================================================================ */
+function switchPlan(idx){
+  var plans=readPlans();
+  if(idx<0||idx>=plans.length)return;
+  setActivePlanIdx(idx);
+  weatherData=null;
+  // Refresh visible panels
+  if(currentTab==='overview')renderOverview();
+  else if(currentTab==='supplies'){renderSupplies();}
+  else if(currentTab==='expenses')renderExpenses();
+  else if(currentTab==='aa')renderAA();
+  else if(currentTab==='share')renderShare();
+  else if(currentTab==='home')renderHome();
+  closePlanDropdown();
+}
+
+function deletePlan(idx){
+  var plans=readPlans();
+  if(plans.length<=1){T('至少保留一个计划，无法删除');return}
+  if(idx<0||idx>=plans.length)return;
+  var active=activePlanIdx();
+  plans.splice(idx,1);
+  savePlans(plans);
+  if(active>=plans.length)active=plans.length-1;
+  if(active===idx&&idx>=plans.length)active=plans.length-1;
+  else if(active>idx)active--;
+  setActivePlanIdx(active);
+  weatherData=null;
+  if(currentTab==='overview')renderOverview();
+  else if(currentTab==='supplies')renderSupplies();
+  else if(currentTab==='expenses')renderExpenses();
+  else if(currentTab==='aa')renderAA();
+  else if(currentTab==='share')renderShare();
+  else if(currentTab==='home')renderHome();
+  closePlanDropdown();
+  T('计划已删除');
+}
+
+function togglePlanDropdown(){
+  var dd=document.getElementById('planDropdown');
+  var bd=document.getElementById('planDropdownBackdrop');
+  var arr=document.querySelector('.dropdown-arrow');
+  if(dd.classList.contains('show')){
+    closePlanDropdown();
+  } else {
+    renderPlanDropdown();
+    dd.classList.add('show');
+    bd.classList.add('show');
+    if(arr)arr.classList.add('open');
+  }
+}
+
+function closePlanDropdown(){
+  var dd=document.getElementById('planDropdown');
+  var bd=document.getElementById('planDropdownBackdrop');
+  var arr=document.querySelector('.dropdown-arrow');
+  if(dd)dd.classList.remove('show');
+  if(bd)bd.classList.remove('show');
+  if(arr)arr.classList.remove('open');
+}
+
+function renderPlanDropdown(){
+  var plans=readPlans();
+  var active=activePlanIdx();
+  var html='';
+  plans.forEach(function(p,i){
+    html+='<div class="plan-dropdown-item'+(i===active?' active':'')+'" onclick="switchPlan('+i+')">';
+    html+='<span>'+(i===active?'<span class="plan-item-check">✓</span> ':'')+esc(p.name)+'</span>';
+    if(plans.length>1){
+      html+='<span class="plan-item-delete" onclick="event.stopPropagation();deletePlan('+i+')">×</span>';
+    }
+    html+='</div>';
+  });
+  html+='<div class="plan-dropdown-add" onclick="newPlanModal();closePlanDropdown()">＋ 新建计划</div>';
+  document.getElementById('planDropdown').innerHTML=html;
+}
+
+/* ===== NAVIGATION ===== */
+function switchTab(name){
+  currentTab=name;
+  document.getElementById('tabbar').style.display=(name==='home'?'none':'flex');
+  document.querySelectorAll('#tabbar .tab').forEach(function(t){t.classList.toggle('active',t.dataset.tab===name)});
+  document.querySelectorAll('.panel').forEach(function(p){p.classList.remove('active')});
+  var panel=document.getElementById('panel-'+name);
+  if(panel)panel.classList.add('active');
+  document.getElementById('content').scrollTop=0;
+  if(name==='home')renderHome();
+  else if(name==='overview')renderOverview();
+  else if(name==='supplies')renderSupplies();
+  else if(name==='expenses')renderExpenses();
+  else if(name==='aa')renderAA();
+  else if(name==='share')renderShare();
+}
+document.querySelectorAll('#tabbar .tab').forEach(function(t){
+  t.addEventListener('click',function(){switchTab(this.dataset.tab)});
+});
+
+/* ===== MODAL ===== */
+function openModal(title,content){
+  document.getElementById('modalSheet').innerHTML='<h3>'+title+'</h3>'+content;
+  document.getElementById('modalOverlay').classList.add('active');
+}
+function closeModal(){document.getElementById('modalOverlay').classList.remove('active');editingId=null;}
+function modalField(label,html){return '<div class="modal-field"><label>'+label+'</label>'+html+'</div>';}
+
+/* ================================================================
+   HOME (保留)
+   ================================================================ */
+function renderHome(){
+  var plans=readPlans();
+  var html='<div class="home-hero"><span class="hero-emoji">⛺</span><h1>露营小助手</h1><p>告别繁琐表格，轻松规划露营每件事</p></div>';
+  if(plans.length>0){
+    plans.forEach(function(plan,idx){
+      var nFam=plan.families.length;
+      var nPpl=0;plan.families.forEach(function(f){nPpl+=f.members.length});
+      html+='<div class="home-plan-card" onclick="switchPlan('+idx+');switchTab(\'overview\')">';
+      html+='<div class="home-plan-card-actions">';
+      html+='<button class="home-plan-card-btn export-btn" onclick="event.stopPropagation();exportPlan('+idx+')" title="导出计划">📤</button>';
+      html+='<button class="home-plan-card-btn delete-btn" onclick="event.stopPropagation();if(confirm(\'确定删除'+esc(plan.info.name)+'计划？\')){deletePlan('+idx+')}" title="删除计划">🗑️</button>';
+      html+='</div>';
+      html+='<div class="plan-name">🏕️ '+esc(plan.info.name)+'</div>';
+      html+='<div class="plan-meta"><span>📅 '+esc(plan.info.date)+'</span><span>📍 '+esc(plan.info.location)+'</span></div>';
+      html+='<div class="plan-stats"><span>🏠 '+nFam+'个家庭</span><span>👥 '+nPpl+'人</span></div></div>';
+    });
+  }
+  html+='<div class="home-cta">';
+  html+='<div class="hint">'+(plans.length>0?'已有 '+plans.length+' 个露营计划':'还没有露营计划？')+'</div>';
+  html+='<div style="display:flex;gap:10px;margin-bottom:10px">';
+  html+='<button class="btn btn-primary" style="flex:1" onclick="newPlanModal()">＋ 新建露营计划</button>';
+  html+='<button class="btn btn-outline" style="flex:1" onclick="joinRoomModal()">🔗 加入房间</button>';
+  html+='</div>';
+  html+='<div style="display:flex;gap:10px;margin-bottom:10px">';
+  html+='<button class="btn btn-outline" style="flex:1" onclick="importPlan()">📥 导入计划</button>';
+  html+='</div>';
+  html+='<button class="btn btn-primary" style="width:100%;background:var(--text2)" onclick="loadSampleData()">📋 加载示例数据</button>';
+  html+='</div>';
+  document.getElementById('panel-home').innerHTML=html;
+}
+
+function loadSampleData(){
+  var plans=readPlans();
+  for(var i=0;i<plans.length;i++){
+    if(plans[i].info&&plans[i].info.name===DEFAULT_INFO.name){
+      T('示例计划已存在');
+      return;
+    }
+  }
+  var plan=makeDefaultPlan('示例计划',deepClone(DEFAULT_INFO),deepClone(DEFAULT_FAMILIES),deepClone(DEFAULT_FAMILY_GEAR),deepClone(DEFAULT_EXPENSES),deepClone(DEFAULT_PUBLIC_FOOD),deepClone(DEFAULT_PUBLIC_GEAR),deepClone(DEFAULT_ITINERARY));
+  plan.mapConfig={lng:116.67,lat:40.58,name:'北京怀柔白河湾'};
+  plans.push(plan);
+  savePlans(plans);
+  setActivePlanIdx(plans.length-1);
+  weatherData=null;
+  T('示例计划已创建');
+  renderHome();
+  if(currentTab!=='home'){switchTab(currentTab)}
+}
+
+function exportPlan(idx){
+  var plans=readPlans();
+  if(idx<0||idx>=plans.length)return;
+  var plan=deepClone(plans[idx]);
+  var json=JSON.stringify(plan,null,2);
+  var blob=new Blob([json],{type:'application/json'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');
+  a.href=url;
+  var safeDate=plan.info.date.replace(/[\\\/:*?"<>|]/g,'-');
+  a.download='露营计划_'+plan.info.name+'_'+safeDate+'.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  T('计划已导出');
+}
+
+function importPlan(){
+  var input=document.getElementById('importFileInput');
+  if(!input){
+    input=document.createElement('input');
+    input.type='file';
+    input.accept='.json';
+    input.id='importFileInput';
+    input.style.display='none';
+    input.onchange=function(e){
+      var file=e.target.files[0];
+      if(!file)return;
+      var reader=new FileReader();
+      reader.onload=function(ev){
+        try{
+          var plan=JSON.parse(ev.target.result);
+          if(!plan.info||!plan.name||!plan.families){
+            T('无效的计划文件，缺少必要字段');
+            return;
+          }
+          var plans=readPlans();
+          plans.push(plan);
+          savePlans(plans);
+          setActivePlanIdx(plans.length-1);
+          weatherData=null;
+          T('计划已导入');
+          renderHome();
+          if(currentTab!=='home'){switchTab(currentTab);}
+        }catch(err){
+          T('文件解析失败，请检查文件格式');
+        }
+      };
+      reader.readAsText(file);
+      input.value='';
+    };
+    document.body.appendChild(input);
+  }
+  input.click();
+}
+
+function newPlanModal(){
+  var html=modalField('计划名称','<input id="mPlanName" value="" placeholder="如：周末露营">');
+  html+=modalField('日期','<input id="mPlanDate" value="" placeholder="如：5月31日 - 6月1日">');
+  html+=modalField('地点','<input id="mPlanLoc" value="" placeholder="如：成都 · 青城山">');
+  html+='<div class="modal-actions"><button class="btn btn-outline" onclick="closeModal()">取消</button>';
+  html+='<button class="btn btn-primary" onclick="createNewPlan()">创建新计划</button></div>';
+  openModal('＋ 新建计划',html);
+}
+
+function createNewPlan(){
+  var name=document.getElementById('mPlanName').value.trim()||'未命名露营';
+  var date=document.getElementById('mPlanDate').value.trim()||'待定';
+  var loc=document.getElementById('mPlanLoc').value.trim()||'待定';
+  var plan=makeDefaultPlan(name,{name:name,date:date,location:loc},DEFAULT_FAMILIES,DEFAULT_FAMILY_GEAR,[],[],[],[]);
+  var plans=readPlans();
+  plans.push(plan);
+  savePlans(plans);
+  setActivePlanIdx(plans.length-1);
+  weatherData=null;
+  closeModal();T('新计划已创建');
+  renderHome();
+  if(currentTab!=='home'){switchTab(currentTab)}
+}
+
+function joinRoomModal(){
+  var html=modalField('房间号','<input id="mRoomCode" placeholder="请输入房间号" maxlength="20">');
+  html+='<div class="modal-actions"><button class="btn btn-outline" onclick="closeModal()">取消</button>';
+  html+='<button class="btn btn-primary" onclick="joinRoom()">加入</button></div>';
+  openModal('🔗 加入房间',html);
+}
+
+function joinRoom(){
+  closeModal();T('房间功能开发中，敬请期待');
+}
+
+/* ================================================================
+   WEATHER (Open-Meteo)
+   ================================================================ */
+var WMO_CODES = {
+  0:'☀️ 晴天',1:'🌤️ 少云',2:'🌤️ 少云',3:'🌤️ 少云',
+  45:'🌫️ 雾',48:'🌫️ 雾',
+  51:'🌧️ 小雨',53:'🌧️ 小雨',55:'🌧️ 小雨',
+  61:'🌧️ 雨',63:'🌧️ 雨',65:'🌧️ 雨',
+  71:'❄️ 雪',73:'❄️ 雪',75:'❄️ 雪',77:'❄️ 雪',
+  80:'🌧️ 阵雨',81:'🌧️ 阵雨',82:'🌧️ 阵雨',
+  95:'⛈️ 雷暴',96:'⛈️ 雷暴',99:'⛈️ 雷暴'
+};
+var DAY_NAMES = ['周日','周一','周二','周三','周四','周五','周六'];
+
+function weatherDesc(code){return WMO_CODES[code]||'🌤️ 多云'}
+function weatherIconOnly(code){
+  var d=weatherDesc(code);return d.split(' ')[0];
+}
+
+function fetchWeather(){
+  if(weatherLoading)return;
+  weatherLoading=true;
+  var plan=getActivePlan();
+  if(!plan||!plan.mapConfig){weatherLoading=false;return}
+  var mapConfig=plan.mapConfig;
+  renderWeatherCard();
+  var url='https://api.open-meteo.com/v1/forecast?latitude='+mapConfig.lat+'&longitude='+mapConfig.lng+'&current=temperature_2m,weather_code,wind_speed_10m,relative_humidity_2m&daily=temperature_2m_max,temperature_2m_min,weather_code,precipitation_probability_max&timezone=auto&forecast_days=4';
+  fetch(url).then(function(r){
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    return r.json();
+  }).then(function(data){
+    weatherData=data;
+    weatherLoading=false;
+    if(currentTab==='overview')renderWeatherCard();
+  }).catch(function(err){
+    weatherLoading=false;
+    weatherData='error';
+    if(currentTab==='overview')renderWeatherCard();
+  });
+}
+
+function renderWeatherCard(){
+  var container=document.getElementById('weatherCardContainer');
+  if(!container)return;
+
+  // Loading skeleton
+  if(weatherLoading && !weatherData){
+    container.innerHTML='<div class="skeleton-line skeleton-line-lg"></div><div class="skeleton-line"></div><div class="skeleton-row"><div class="skeleton-day"></div><div class="skeleton-day"></div><div class="skeleton-day"></div></div>';
+    return;
+  }
+
+  // Error state
+  if(weatherData==='error'){
+    container.innerHTML='<div class="weather-error">⚠️ 天气加载失败 <span class="retry-link" onclick="fetchWeather()">点击重试</span></div>';
+    return;
+  }
+
+  // Success state
+  if(!weatherData||!weatherData.current||!weatherData.daily)return;
+
+  var c=weatherData.current;
+  var d=weatherData.daily;
+  var html='';
+
+  // Current
+  html+='<div class="weather-current">';
+  html+='<div class="weather-temp-main">'+Math.round(c.temperature_2m)+'°</div>';
+  html+='<div class="weather-curr-info">';
+  html+='<div class="weather-desc">'+weatherDesc(c.weather_code)+'</div>';
+  html+='<div class="weather-details">';
+  html+='<span>💧 '+c.relative_humidity_2m+'%</span>';
+  html+='<span>💨 '+c.wind_speed_10m+' km/h</span>';
+  html+='</div></div></div>';
+
+  // Forecast
+  html+='<div class="weather-forecast">';
+  for(var i=1;i<4&&i<d.time.length;i++){
+    var date=new Date(d.time[i]+'T00:00:00');
+    var dayName=DAY_NAMES[date.getDay()];
+    html+='<div class="weather-day">';
+    html+='<div class="day-name">'+dayName+'</div>';
+    html+='<div class="day-icon">'+weatherIconOnly(d.weather_code[i])+'</div>';
+    html+='<div class="day-temps"><span>'+Math.round(d.temperature_2m_max[i])+'°</span> <span class="low">'+Math.round(d.temperature_2m_min[i])+'°</span></div>';
+    html+='</div>';
+  }
+  html+='</div>';
+
+  container.innerHTML=html;
+}
+
+/* ================================================================
+   OVERVIEW
+   ================================================================ */
+function renderOverview(){
+  var info=L('info',DEFAULT_INFO);
+  var plan=getActivePlan();
+  var planName=plan?plan.name:(info?info.name:'我的露营');
+  var families=L('families',DEFAULT_FAMILIES);
+  var totalPpl=0;families.forEach(function(f){totalPpl+=f.members.length});
+  var totalItems=countAllSupplies();
+  var mapConfig=L('mapConfig',{lng:116.67,lat:40.58,name:'北京怀柔白河湾'});
+
+  var html='';
+
+  // Plan header with dropdown
+  html+='<div class="ov-plan-header">';
+  html+='<div class="plan-switcher">';
+  html+='<div class="plan-switcher-trigger" onclick="togglePlanDropdown()">';
+  html+='<span class="plan-trigger-name">🏕️ '+esc(planName)+'</span>';
+  html+='<span class="dropdown-arrow">▼</span>';
+  html+='</div>';
+  html+='<div class="plan-dropdown" id="planDropdown"></div>';
+  html+='</div>';
+  html+='<button class="btn btn-xs btn-outline" onclick="editCampInfo()">编辑</button>';
+  html+='</div>';
+
+  // Info Card
+  html+='<div class="card"><div class="card-title">🏕️ 露营信息</div>';
+  html+='<div class="ov-info-row">';
+  html+='<div class="ov-info-item"><div class="label">计划名称</div><div class="value">'+esc(info.name)+'</div></div>';
+  html+='<div class="ov-info-item"><div class="label">日期</div><div class="value">'+esc(info.date)+'</div></div>';
+  html+='</div><div class="ov-info-row" style="margin-top:8px">';
+  html+='<div class="ov-info-item"><div class="label">地点</div><div class="value">'+esc(info.location)+'</div></div>';
+  html+='</div></div>';
+
+  // Weather Card
+  html+='<div class="weather-card">';
+  html+='<div class="weather-header">';
+  html+='<div class="weather-title">🌤️ 营地天气</div>';
+  html+='<div class="weather-refresh" onclick="fetchWeather()">🔄 刷新</div>';
+  html+='</div>';
+  html+='<div id="weatherCardContainer"></div>';
+  html+='</div>';
+
+  // Map Card
+  var mapSrc='https://uri.amap.com/marker?position='+mapConfig.lng+','+mapConfig.lat+'&name='+encodeURIComponent(mapConfig.name);
+  html+='<div class="card"><div class="card-title">🗺️ 营地位置</div>';
+  html+='<div class="ov-map-container">';
+  html+='<iframe class="ov-map-iframe" src="'+mapSrc+'" allowfullscreen loading="lazy" referrerpolicy="no-referrer"></iframe>';
+  html+='</div>';
+  html+='<div class="ov-map-inputs">';
+  html+='<div class="ov-map-input-row"><label>经度</label><input type="number" step="0.01" id="mapLng" value="'+mapConfig.lng+'" placeholder="如 116.67">';
+  html+='<label style="min-width:36px">纬度</label><input type="number" step="0.01" id="mapLat" value="'+mapConfig.lat+'" placeholder="如 40.58"></div>';
+  html+='<div class="ov-map-input-row"><label>地点</label><input type="text" id="mapName" value="'+esc(mapConfig.name)+'" placeholder="营地名称"></div>';
+  html+='<button class="btn btn-primary btn-sm" style="margin-top:4px" onclick="updateMapConfig()">🗺️ 更新地图</button>';
+  html+='</div></div>';
+
+  // Families Card
+  html+='<div class="card"><div class="card-title">👨‍👩‍👧‍👦 参与家庭</div>';
+  families.forEach(function(f,idx){
+    html+='<div class="ov-family-card"><span class="fam-emoji">🏕️</span>';
+    html+='<div><div class="fam-name">'+esc(f.name)+'</div>';
+    html+='<div style="margin-top:4px">';
+    f.members.forEach(function(m){
+      html+='<span class="ov-member-tag">'+esc(m)+'</span>';
+    });
+    html+='</div></div>';
+    html+='<div style="display:flex;align-items:center;gap:4px;margin-left:auto">';
+    html+='<button class="btn-icon" onclick="editFamilyModal('+idx+')" title="编辑">✏️</button>';
+    html+='<button class="btn-icon danger" onclick="deleteFamily('+idx+')" title="删除">🗑️</button>';
+    html+='<span class="fam-count">'+f.members.length+'人</span></div></div>';
+  });
+  html+='<button class="btn btn-outline btn-block" style="margin-top:8px" onclick="addFamilyModal()">＋ 添加家庭</button>';
+  html+='</div>';
+
+  // Stats Bar
+  html+='<div class="ov-stats-bar">';
+  html+='<div class="ov-stat-item"><div class="stat-num">'+families.length+'</div><div class="stat-label">🏠 结算主体</div></div>';
+  html+='<div class="ov-stat-item"><div class="stat-num">'+totalPpl+'</div><div class="stat-label">👥 参与人数</div></div>';
+  html+='<div class="ov-stat-item"><div class="stat-num">'+totalItems+'</div><div class="stat-label">📦 物资项目</div></div>';
+  html+='</div>';
+
+  document.getElementById('panel-overview').innerHTML=html;
+
+  // Trigger weather fetch if not loaded
+  if(!weatherData && !weatherLoading){
+    fetchWeather();
+  } else {
+    renderWeatherCard();
+  }
+}
+
+function updateMapConfig(){
+  var lng=parseFloat(document.getElementById('mapLng').value);
+  var lat=parseFloat(document.getElementById('mapLat').value);
+  var name=document.getElementById('mapName').value.trim()||'营地';
+  if(isNaN(lng)||isNaN(lat)){T('请输入有效的经纬度');return}
+  var plan=getActivePlan();
+  if(plan){plan.mapConfig={lng:lng,lat:lat,name:name};saveActivePlan(plan)}
+  else{S('mapConfig',{lng:lng,lat:lat,name:name})}
+  weatherData=null;renderOverview();T('地图已更新');
+}
+
+function editCampInfo(){
+  var info=L('info',DEFAULT_INFO);
+  var plan=getActivePlan();
+  var planName=plan?plan.name:'';
+  var html=modalField('计划名称','<input id="mInfoPlanName" value="'+esc(planName)+'">');
+  html+=modalField('露营名称','<input id="mInfoName" value="'+esc(info.name)+'">');
+  html+=modalField('日期','<input id="mInfoDate" value="'+esc(info.date)+'" placeholder="如：5月31日 - 6月1日">');
+  html+=modalField('地点','<input id="mInfoLoc" value="'+esc(info.location)+'" placeholder="如：成都 · 青城山">');
+  html+='<div class="modal-actions"><button class="btn btn-outline" onclick="closeModal()">取消</button>';
+  html+='<button class="btn btn-primary" onclick="saveCampInfo()">保存</button></div>';
+  openModal('编辑露营信息',html);
+}
+function saveCampInfo(){
+  var planName=document.getElementById('mInfoPlanName').value.trim()||'未命名';
+  var plan=getActivePlan();
+  if(plan){plan.name=planName;saveActivePlan(plan)}
+  var info={
+    name:document.getElementById('mInfoName').value.trim()||'未命名',
+    date:document.getElementById('mInfoDate').value.trim()||'待定',
+    location:document.getElementById('mInfoLoc').value.trim()||'待定'
+  };
+  S('info',info);
+  closeModal();renderOverview();renderHome();
+}
+
+/* ===== Family Management ===== */
+function editFamilyModal(idx){
+  var families=L('families',DEFAULT_FAMILIES);
+  var f=families[idx];
+  var html=modalField('家庭名称','<input id="mFamName" value="'+esc(f.name)+'">');
+  html+='<div class="modal-field"><label>家庭成员</label>';
+  html+='<div id="mFamMembers">';
+  f.members.forEach(function(m){
+    html+='<div class="fam-member-row" style="display:flex;gap:6px;margin-bottom:6px">';
+    html+='<input style="flex:1" value="'+esc(m)+'">';
+    html+='<button class="btn btn-xs btn-outline" style="color:var(--red);border-color:var(--red)" onclick="removeMemberInput(this)">×</button></div>';
+  });
+  html+='</div>';
+  html+='<button class="btn btn-xs btn-outline" style="margin-top:6px" onclick="addMemberInput(\'mFamMembers\')">+ 添加成员</button></div>';
+  html+='<div class="modal-actions"><button class="btn btn-outline" onclick="closeModal()">取消</button>';
+  html+='<button class="btn btn-primary" onclick="saveFamily('+idx+')">保存</button></div>';
+  openModal('编辑家庭',html);
+}
+
+function saveFamily(idx){
+  var families=L('families',DEFAULT_FAMILIES);
+  var oldName=families[idx].name;
+  var newName=document.getElementById('mFamName').value.trim();
+  if(!newName){T('请输入家庭名称');return}
+  var memberInputs=document.querySelectorAll('#mFamMembers input');
+  var members=[];
+  memberInputs.forEach(function(inp){var v=inp.value.trim();if(v)members.push(v)});
+  if(members.length===0){T('请至少添加一名成员');return}
+  if(newName!==oldName)updateFamilyReferences(oldName,newName);
+  families[idx].name=newName;
+  families[idx].members=members;
+  saveActivePlan(getActivePlan());
+  closeModal();renderOverview();renderSupplies();
+  T('家庭已更新');
+}
+
+function deleteFamily(idx){
+  var plan=getActivePlan();if(!plan)return;
+  var families=plan.families;
+  var name=families[idx].name;
+  families.splice(idx,1);
+  if(plan.familyGear){delete plan.familyGear[name]}
+  saveActivePlan(plan);
+  renderOverview();renderSupplies();
+  T('已删除家庭：'+name);
+}
+
+function addFamilyModal(){
+  var html=modalField('家庭名称','<input id="mFamName" placeholder="如：李雷家">');
+  html+='<div class="modal-field"><label>家庭成员</label>';
+  html+='<div id="mFamMembers">';
+  html+='<div class="fam-member-row" style="display:flex;gap:6px;margin-bottom:6px">';
+  html+='<input style="flex:1" placeholder="成员姓名">';
+  html+='<button class="btn btn-xs btn-outline" style="color:var(--red);border-color:var(--red)" onclick="removeMemberInput(this)">×</button></div>';
+  html+='</div>';
+  html+='<button class="btn btn-xs btn-outline" style="margin-top:6px" onclick="addMemberInput(\'mFamMembers\')">+ 添加成员</button></div>';
+  html+='<div class="modal-actions"><button class="btn btn-outline" onclick="closeModal()">取消</button>';
+  html+='<button class="btn btn-primary" onclick="createFamily()">保存</button></div>';
+  openModal('添加家庭',html);
+}
+
+function createFamily(){
+  var plan=getActivePlan();if(!plan)return;
+  var newName=document.getElementById('mFamName').value.trim();
+  if(!newName){T('请输入家庭名称');return}
+  var memberInputs=document.querySelectorAll('#mFamMembers input');
+  var members=[];
+  memberInputs.forEach(function(inp){var v=inp.value.trim();if(v)members.push(v)});
+  if(members.length===0){T('请至少添加一名成员');return}
+  plan.families.push({name:newName,members:members});
+  if(!plan.familyGear)plan.familyGear={};
+  plan.familyGear[newName]=DEFAULT_GEAR_CATEGORIES.map(function(c){return {cat:c,items:[]}});
+  saveActivePlan(plan);
+  closeModal();renderOverview();renderSupplies();
+  T('家庭已添加');
+}
+
+function addMemberInput(containerId){
+  var container=document.getElementById(containerId);
+  var row=document.createElement('div');
+  row.className='fam-member-row';
+  row.style.cssText='display:flex;gap:6px;margin-bottom:6px';
+  row.innerHTML='<input style="flex:1" placeholder="成员姓名"><button class="btn btn-xs btn-outline" style="color:var(--red);border-color:var(--red)" onclick="removeMemberInput(this)">×</button>';
+  container.appendChild(row);
+}
+
+function removeMemberInput(btn){
+  var rows=btn.closest('#mFamMembers').querySelectorAll('.fam-member-row');
+  if(rows.length<=1){T('至少保留一名成员');return}
+  btn.parentElement.remove();
+}
+
+function updateFamilyReferences(oldName,newName){
+  var plan=getActivePlan();if(!plan)return;
+  // familyGear
+  if(plan.familyGear&&plan.familyGear[oldName]){plan.familyGear[newName]=plan.familyGear[oldName];delete plan.familyGear[oldName]}
+  // expenses
+  if(plan.expenses){plan.expenses.forEach(function(e){if(e.payer===oldName)e.payer=newName})}
+  // publicFood
+  if(plan.publicFood){plan.publicFood.forEach(function(cat){cat.items.forEach(function(item){if(item.assignee===oldName)item.assignee=newName})})}
+  // publicGear
+  if(plan.publicGear){plan.publicGear.forEach(function(cat){cat.items.forEach(function(item){if(item.assignee===oldName)item.assignee=newName})})}
+  saveActivePlan(plan);
+}
+
+function countAllSupplies(){
+  var n=0;
+  var fg=L('familyGear',DEFAULT_FAMILY_GEAR);
+  Object.values(fg).forEach(function(cats){cats.forEach(function(c){n+=c.items.length})});
+  var pf=L('publicFood',DEFAULT_PUBLIC_FOOD);
+  pf.forEach(function(c){n+=c.items.length});
+  var pg=L('publicGear',DEFAULT_PUBLIC_GEAR);
+  pg.forEach(function(c){n+=c.items.length});
+  return n;
+}
+
+/* ================================================================
+   SUPPLIES
+   ================================================================ */
+function renderSupplies(){
+  var families=L('families',DEFAULT_FAMILIES);
+  var html='';
+
+  // Sub-tabs
+  html+='<div class="sup-subtabs">';
+  html+='<div class="sup-subtab'+(suppliesSubtab==='family'?' active':'')+'" onclick="switchSuppliesSub(\'family\')">🏕️ 各家自带</div>';
+  html+='<div class="sup-subtab'+(suppliesSubtab==='food'?' active':'')+'" onclick="switchSuppliesSub(\'food\')">🍖 公共食材</div>';
+  html+='<div class="sup-subtab'+(suppliesSubtab==='gear'?' active':'')+'" onclick="switchSuppliesSub(\'gear\')">⛺ 公共物资</div>';
+  html+='</div>';
+
+  // Filter
+  html+='<div class="sup-filter-row">';
+  html+='<select id="supFilter" onchange="suppliesFilter=this.value;renderSupplies()">';
+  html+='<option value="all"'+(suppliesFilter==='all'?' selected':'')+'>👥 全部人员</option>';
+  families.forEach(function(f){
+    html+='<option value="'+esc(f.name)+'"'+(suppliesFilter===f.name?' selected':'')+'>🏕️ '+esc(f.name)+'</option>';
+  });
+  html+='</select>';
+  html+='<span class="sup-progress" id="supProgress"></span></div>';
+
+  // Content
+  html+='<div id="supContent"></div>';
+
+  document.getElementById('panel-supplies').innerHTML=html;
+  renderSuppliesContent();
+
+  // Update progress
+  setTimeout(updateSuppliesProgress,50);
+}
+
+function switchSuppliesSub(sub){suppliesSubtab=sub;renderSupplies();}
+
+function renderSuppliesContent(){
+  var container=document.getElementById('supContent');
+  if(!container)return;
+  var html='';
+
+  if(suppliesSubtab==='family'){
+    var fg=L('familyGear',DEFAULT_FAMILY_GEAR);
+    var families=L('families',DEFAULT_FAMILIES);
+
+    // Collect all unique categories from all families
+    var allCats=[];
+    var catSeen={};
+    Object.values(fg).forEach(function(cats){
+      cats.forEach(function(cat){
+        if(!catSeen[cat.cat]){catSeen[cat.cat]=true;allCats.push(cat.cat)}
+      });
+    });
+
+    // Category management bar
+    html+='<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:12px;padding:8px 12px;background:var(--card);border-radius:var(--radius);box-shadow:0 1px 3px rgba(0,0,0,.03)">';
+    html+='<span style="font-size:12px;color:var(--text3);margin-right:4px">分类：</span>';
+    allCats.forEach(function(cat){
+      html+='<span style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:var(--primary-light);border-radius:12px;font-size:12px;color:var(--primary);font-weight:500">'+esc(cat);
+      html+='<span style="cursor:pointer;font-size:14px;line-height:1;color:var(--text3)" onclick="deleteCategory(\''+esc(cat)+'\')" title="删除此分类">×</span></span>';
+    });
+    html+='<button class="btn btn-xs btn-outline" style="margin-left:auto" onclick="addCategoryModal()">+ 分类</button>';
+    html+='</div>';
+
+    families.forEach(function(f){
+      if(suppliesFilter!=='all'&&suppliesFilter!==f.name)return;
+      var cats=fg[f.name]||[];
+      cats.forEach(function(cat){
+        html+='<div class="sup-cat-header">'+esc(cat.cat)+' <span style="font-size:12px;color:var(--text3);font-weight:400">'+esc(f.name)+'</span></div>';
+        cat.items.forEach(function(item,i){
+          html+='<div class="sup-item">';
+          html+='<input type="checkbox" '+(item.checked?'checked':'')+' onchange="toggleFamilyItem(\''+esc(f.name)+'\',\''+esc(cat.cat)+'\','+i+',this.checked)">';
+          html+='<div class="item-info"><div class="item-name'+(item.checked?' done':'')+'">'+esc(item.name)+'</div></div>';
+          html+='<div class="item-actions">';
+          html+='<button class="btn-icon" onclick="editSuppliesItem(\'family\',\''+esc(f.name)+'\',\''+esc(cat.cat)+'\','+i+')" title="编辑">✏️</button>';
+          html+='<button class="btn-icon danger" onclick="deleteSuppliesItem(\'family\',\''+esc(f.name)+'\',\''+esc(cat.cat)+'\','+i+')" title="删除">🗑️</button>';
+          html+='</div></div>';
+        });
+        html+='<div class="sup-add-row">';
+        html+='<input type="text" id="supAdd_'+esc(f.name)+'_'+esc(cat.cat)+'" placeholder="添加物品...">';
+        html+='<button class="btn btn-primary btn-sm" onclick="addSuppliesItem(\'family\',\''+esc(f.name)+'\',\''+esc(cat.cat)+'\')">+ 添加</button></div>';
+      });
+    });
+  } else if(suppliesSubtab==='food'){
+    var pf=L('publicFood',DEFAULT_PUBLIC_FOOD);
+    pf.forEach(function(cat){
+      html+='<div class="sup-cat-header">'+esc(cat.cat)+'</div>';
+      cat.items.forEach(function(item,i){
+        if(suppliesFilter!=='all'&&suppliesFilter!==item.assignee)return;
+        html+='<div class="sup-item">';
+        html+='<div class="item-info"><div class="item-name">'+esc(item.name)+'</div>';
+        html+='<div class="item-qty">数量: '+esc(item.qty)+'</div></div>';
+        html+='<span class="item-tag">'+esc(item.assignee)+'</span>';
+        html+='<div class="item-actions">';
+        html+='<button class="btn-icon" onclick="editFoodItem(\''+esc(cat.cat)+'\','+i+')">✏️</button>';
+        html+='<button class="btn-icon danger" onclick="deleteFoodItem(\''+esc(cat.cat)+'\','+i+')">🗑️</button>';
+        html+='</div></div>';
+      });
+      html+='<div class="sup-add-row">';
+      html+='<input type="text" id="supFoodName_'+esc(cat.cat)+'" placeholder="食材名称">';
+      html+='<input type="text" id="supFoodQty_'+esc(cat.cat)+'" placeholder="数量" style="width:90px">';
+      html+='<select id="supFoodAsn_'+esc(cat.cat)+'">';
+      var families1=L('families',DEFAULT_FAMILIES);
+      families1.forEach(function(f){
+        html+='<option value="'+esc(f.name)+'">'+esc(f.name)+'</option>';
+      });
+      html+='</select>';
+      html+='<button class="btn btn-primary btn-sm" onclick="addFoodItem(\''+esc(cat.cat)+'\')">+</button></div>';
+    });
+  } else if(suppliesSubtab==='gear'){
+    var pg=L('publicGear',DEFAULT_PUBLIC_GEAR);
+    pg.forEach(function(cat){
+      html+='<div class="sup-cat-header">'+esc(cat.cat)+'</div>';
+      cat.items.forEach(function(item,i){
+        if(suppliesFilter!=='all'&&suppliesFilter!==item.assignee)return;
+        html+='<div class="sup-item">';
+        html+='<div class="item-info"><div class="item-name">'+esc(item.name)+'</div>';
+        html+='<div class="item-qty">数量: '+esc(item.qty)+'</div></div>';
+        html+='<span class="item-tag">'+esc(item.assignee)+'</span>';
+        html+='<div class="item-actions">';
+        html+='<button class="btn-icon" onclick="editGearItem(\''+esc(cat.cat)+'\','+i+')">✏️</button>';
+        html+='<button class="btn-icon danger" onclick="deleteGearItem(\''+esc(cat.cat)+'\','+i+')">🗑️</button>';
+        html+='</div></div>';
+      });
+      html+='<div class="sup-add-row">';
+      html+='<input type="text" id="supGearName_'+esc(cat.cat)+'" placeholder="物品名称">';
+      html+='<input type="text" id="supGearQty_'+esc(cat.cat)+'" placeholder="数量" style="width:90px">';
+      html+='<select id="supGearAsn_'+esc(cat.cat)+'">';
+      var families2=L('families',DEFAULT_FAMILIES);
+      families2.forEach(function(f){
+        html+='<option value="'+esc(f.name)+'">'+esc(f.name)+'</option>';
+      });
+      html+='</select>';
+      html+='<button class="btn btn-primary btn-sm" onclick="addGearItem(\''+esc(cat.cat)+'\')">+</button></div>';
+    });
+  }
+
+  container.innerHTML=html||'<div style="text-align:center;padding:40px;color:var(--text3)">暂无物资，点击下方按钮添加</div>';
+}
+
+function updateSuppliesProgress(){
+  var el=document.getElementById('supProgress');if(!el)return;
+  var total=0,checked=0;
+  if(suppliesSubtab==='family'){
+    var fg=L('familyGear',DEFAULT_FAMILY_GEAR);
+    Object.values(fg).forEach(function(cats){
+      cats.forEach(function(cat){
+        cat.items.forEach(function(item){
+          total++;if(item.checked)checked++;
+        });
+      });
+    });
+  } else {
+    el.textContent='';return;
+  }
+  el.textContent=checked+'/'+total+' 已备';
+}
+
+function toggleFamilyItem(fam,cat,idx,checked){
+  var fg=L('familyGear',DEFAULT_FAMILY_GEAR);
+  if(fg[fam]){
+    var catObj=fg[fam].find(function(c){return c.cat===cat});
+    if(catObj&&catObj.items[idx]){catObj.items[idx].checked=checked;S('familyGear',fg)}
+  }
+  renderSuppliesContent();updateSuppliesProgress();
+}
+
+function addSuppliesItem(type,fam,cat){
+  var key='supAdd_'+fam+'_'+cat;
+  var name=document.getElementById(key).value.trim();
+  if(!name)return;
+  if(type==='family'){
+    var fg=L('familyGear',DEFAULT_FAMILY_GEAR);
+    if(!fg[fam])fg[fam]=[];
+    var catObj=fg[fam].find(function(c){return c.cat===cat});
+    if(!catObj){catObj={cat:cat,items:[]};fg[fam].push(catObj)}
+    catObj.items.push({name:name,checked:false});
+    S('familyGear',fg);
+  }
+  renderSuppliesContent();updateSuppliesProgress();document.getElementById(key).value='';
+}
+
+function deleteSuppliesItem(type,fam,cat,idx){
+  if(type==='family'){
+    var fg=L('familyGear',DEFAULT_FAMILY_GEAR);
+    if(fg[fam]){
+      var catObj=fg[fam].find(function(c){return c.cat===cat});
+      if(catObj){catObj.items.splice(idx,1);S('familyGear',fg)}
+    }
+  }
+  renderSuppliesContent();updateSuppliesProgress();renderOverview();
+}
+
+function editSuppliesItem(type,fam,cat,idx){
+  if(type==='family'){
+    var fg=L('familyGear',DEFAULT_FAMILY_GEAR);
+    var item=fg[fam].find(function(c){return c.cat===cat}).items[idx];
+    var html=modalField('物品名称','<input id="mEditName" value="'+esc(item.name)+'">');
+    html+='<div class="modal-actions"><button class="btn btn-outline" onclick="closeModal()">取消</button>';
+    html+='<button class="btn btn-primary" onclick="saveEditFamilyItem(\''+esc(fam)+'\',\''+esc(cat)+'\','+idx+')">保存</button></div>';
+    openModal('编辑物品',html);
+  }
+}
+function saveEditFamilyItem(fam,cat,idx){
+  var fg=L('familyGear',DEFAULT_FAMILY_GEAR);
+  fg[fam].find(function(c){return c.cat===cat}).items[idx].name=document.getElementById('mEditName').value.trim();
+  S('familyGear',fg);closeModal();renderSuppliesContent();
+}
+
+function addFoodItem(cat){
+  var name=document.getElementById('supFoodName_'+cat).value.trim();
+  var qty=document.getElementById('supFoodQty_'+cat).value.trim();
+  var asn=document.getElementById('supFoodAsn_'+cat).value;
+  if(!name||!qty)return;
+  var pf=L('publicFood',DEFAULT_PUBLIC_FOOD);
+  var catObj=pf.find(function(c){return c.cat===cat});
+  if(!catObj){catObj={cat:cat,items:[]};pf.push(catObj)}
+  catObj.items.push({name:name,qty:qty,assignee:asn});
+  S('publicFood',pf);
+  renderSuppliesContent();renderOverview();
+  document.getElementById('supFoodName_'+cat).value='';
+  document.getElementById('supFoodQty_'+cat).value='';
+}
+
+function editFoodItem(cat,idx){
+  var pf=L('publicFood',DEFAULT_PUBLIC_FOOD);
+  var item=pf.find(function(c){return c.cat===cat}).items[idx];
+  var families=L('families',DEFAULT_FAMILIES);
+  var html=modalField('食材名称','<input id="mFoodName" value="'+esc(item.name)+'">');
+  html+=modalField('数量','<input id="mFoodQty" value="'+esc(item.qty)+'">');
+  html+=modalField('负责人','<select id="mFoodAsn">'+families.map(function(f){return '<option value="'+esc(f.name)+'"'+(f.name===item.assignee?' selected':'')+'>'+esc(f.name)+'</option>'}).join('')+'</select>');
+  html+='<div class="modal-actions"><button class="btn btn-outline" onclick="closeModal()">取消</button>';
+  html+='<button class="btn btn-primary" onclick="saveEditFoodItem(\''+esc(cat)+'\','+idx+')">保存</button></div>';
+  openModal('编辑食材',html);
+}
+function saveEditFoodItem(cat,idx){
+  var pf=L('publicFood',DEFAULT_PUBLIC_FOOD);
+  var item=pf.find(function(c){return c.cat===cat}).items[idx];
+  item.name=document.getElementById('mFoodName').value.trim();
+  item.qty=document.getElementById('mFoodQty').value.trim();
+  item.assignee=document.getElementById('mFoodAsn').value;
+  S('publicFood',pf);closeModal();renderSuppliesContent();
+}
+function deleteFoodItem(cat,idx){
+  var pf=L('publicFood',DEFAULT_PUBLIC_FOOD);
+  pf.find(function(c){return c.cat===cat}).items.splice(idx,1);
+  S('publicFood',pf);renderSuppliesContent();renderOverview();
+}
+
+function addGearItem(cat){
+  var name=document.getElementById('supGearName_'+cat).value.trim();
+  var qty=document.getElementById('supGearQty_'+cat).value.trim();
+  var asn=document.getElementById('supGearAsn_'+cat).value;
+  if(!name||!qty)return;
+  var pg=L('publicGear',DEFAULT_PUBLIC_GEAR);
+  var catObj=pg.find(function(c){return c.cat===cat});
+  if(!catObj){catObj={cat:cat,items:[]};pg.push(catObj)}
+  catObj.items.push({name:name,qty:qty,assignee:asn});
+  S('publicGear',pg);
+  renderSuppliesContent();renderOverview();
+  document.getElementById('supGearName_'+cat).value='';
+  document.getElementById('supGearQty_'+cat).value='';
+}
+function editGearItem(cat,idx){
+  var pg=L('publicGear',DEFAULT_PUBLIC_GEAR);
+  var item=pg.find(function(c){return c.cat===cat}).items[idx];
+  var families=L('families',DEFAULT_FAMILIES);
+  var html=modalField('物品名称','<input id="mGearName" value="'+esc(item.name)+'">');
+  html+=modalField('数量','<input id="mGearQty" value="'+esc(item.qty)+'">');
+  html+=modalField('负责人','<select id="mGearAsn">'+families.map(function(f){return '<option value="'+esc(f.name)+'"'+(f.name===item.assignee?' selected':'')+'>'+esc(f.name)+'</option>'}).join('')+'</select>');
+  html+='<div class="modal-actions"><button class="btn btn-outline" onclick="closeModal()">取消</button>';
+  html+='<button class="btn btn-primary" onclick="saveEditGearItem(\''+esc(cat)+'\','+idx+')">保存</button></div>';
+  openModal('编辑公共物资',html);
+}
+function saveEditGearItem(cat,idx){
+  var pg=L('publicGear',DEFAULT_PUBLIC_GEAR);
+  var item=pg.find(function(c){return c.cat===cat}).items[idx];
+  item.name=document.getElementById('mGearName').value.trim();
+  item.qty=document.getElementById('mGearQty').value.trim();
+  item.assignee=document.getElementById('mGearAsn').value;
+  S('publicGear',pg);closeModal();renderSuppliesContent();
+}
+function deleteGearItem(cat,idx){
+  var pg=L('publicGear',DEFAULT_PUBLIC_GEAR);
+  pg.find(function(c){return c.cat===cat}).items.splice(idx,1);
+  S('publicGear',pg);renderSuppliesContent();renderOverview();
+}
+
+/* ===== Category Management ===== */
+function addCategoryModal(){
+  var html=modalField('分类名称','<input id="mCatName" placeholder="如：照明装备">');
+  html+='<div class="modal-actions"><button class="btn btn-outline" onclick="closeModal()">取消</button>';
+  html+='<button class="btn btn-primary" onclick="saveNewCategory()">添加</button></div>';
+  openModal('+ 添加分类',html);
+}
+
+function saveNewCategory(){
+  var catName=document.getElementById('mCatName').value.trim();
+  if(!catName){T('请输入分类名称');return}
+  var plan=getActivePlan();if(!plan)return;
+  if(!plan.familyGear)plan.familyGear={};
+  var families=plan.families||[];
+  families.forEach(function(f){
+    var cats=plan.familyGear[f.name]||[];
+    // Check if category already exists for this family
+    if(!cats.some(function(c){return c.cat===catName})){
+      cats.push({cat:catName,items:[]});
+    }
+    plan.familyGear[f.name]=cats;
+  });
+  saveActivePlan(plan);
+  closeModal();renderSuppliesContent();renderOverview();
+  T('分类「'+catName+'」已添加');
+}
+
+function deleteCategory(catName){
+  if(!confirm('确定删除分类「'+catName+'」？所有家庭中该分类下的物品将被移除。'))return;
+  var plan=getActivePlan();if(!plan)return;
+  if(!plan.familyGear)return;
+  Object.keys(plan.familyGear).forEach(function(fam){
+    plan.familyGear[fam]=plan.familyGear[fam].filter(function(c){return c.cat!==catName});
+  });
+  saveActivePlan(plan);
+  renderSuppliesContent();renderOverview();
+  T('分类「'+catName+'」已删除');
+}
+
+/* ================================================================
+   EXPENSES
+   ================================================================ */
+function renderExpenses(){
+  var expenses=L('expenses',DEFAULT_EXPENSES);
+  var families=L('families',DEFAULT_FAMILIES);
+  var html='';
+
+  // Summary
+  var totalAll=0,totalAA=0;
+  expenses.forEach(function(e){totalAll+=e.amount;if(e.inAA)totalAA+=e.amount});
+  var perFamily=totalAA/families.length;
+
+  html+='<div class="exp-summary">';
+  html+='<div class="exp-sum-card"><div class="sum-num">&yen;'+totalAll.toFixed(0)+'</div><div class="sum-label">总花费</div></div>';
+  html+='<div class="exp-sum-card"><div class="sum-num">&yen;'+totalAA.toFixed(0)+'</div><div class="sum-label">计入AA</div></div>';
+  html+='<div class="exp-sum-card"><div class="sum-num">&yen;'+perFamily.toFixed(0)+'</div><div class="sum-label">每方均摊</div></div>';
+  html+='<div class="exp-sum-card"><div class="sum-num">'+families.length+'</div><div class="sum-label">结算方</div></div>';
+  html+='</div>';
+
+  // Expense list
+  html+='<div class="card-title">💳 花费明细 ';
+  html+='<button class="btn btn-xs btn-outline" style="margin-left:auto" onclick="addExpenseModal()">+ 记一笔</button></div>';
+  expenses.forEach(function(e,i){
+    html+='<div class="exp-item">';
+    html+='<div class="exp-purpose">'+esc(e.purpose)+'</div>';
+    html+='<div class="exp-amount">&yen;'+e.amount.toFixed(2)+'</div>';
+    html+='<div class="exp-payer">'+esc(e.payer)+' 垫付</div>';
+    html+='<span class="exp-aa '+(e.inAA?'in':'out')+'" onclick="toggleExpenseAA('+i+')">'+(e.inAA?'⚖️ AA':'不计')+'</span>';
+    html+='<button class="btn-icon" onclick="editExpenseModal('+i+')">✏️</button>';
+    html+='<button class="btn-icon danger" onclick="deleteExpense('+i+')">🗑️</button>';
+    html+='</div>';
+  });
+
+  document.getElementById('panel-expenses').innerHTML=html;
+}
+
+function toggleExpenseAA(i){
+  var e=L('expenses',DEFAULT_EXPENSES);e[i].inAA=!e[i].inAA;S('expenses',e);renderExpenses();
+}
+function deleteExpense(i){
+  var e=L('expenses',DEFAULT_EXPENSES);e.splice(i,1);S('expenses',e);renderExpenses();
+}
+function addExpenseModal(){
+  var families=L('families',DEFAULT_FAMILIES);
+  var html=modalField('用途','<input id="mExpPurpose" placeholder="如：食材采购">');
+  html+=modalField('金额 (¥)','<input id="mExpAmount" type="number" step="0.01" min="0" placeholder="0.00">');
+  html+=modalField('垫付人','<select id="mExpPayer">'+families.map(function(f){return '<option value="'+esc(f.name)+'">'+esc(f.name)+'</option>'}).join('')+'</select>');
+  html+=modalField('计入AA','<select id="mExpAA"><option value="1">是 ⚖️</option><option value="0">否</option></select>');
+  html+='<div class="modal-actions"><button class="btn btn-outline" onclick="closeModal()">取消</button>';
+  html+='<button class="btn btn-primary" onclick="saveNewExpense()">保存</button></div>';
+  openModal('记一笔花费',html);
+}
+function saveNewExpense(){
+  var purpose=document.getElementById('mExpPurpose').value.trim();
+  var amount=parseFloat(document.getElementById('mExpAmount').value);
+  if(!purpose||isNaN(amount)||amount<=0){T('请填写用途和金额');return}
+  var e=L('expenses',DEFAULT_EXPENSES);
+  e.push({purpose:purpose,amount:amount,payer:document.getElementById('mExpPayer').value,inAA:document.getElementById('mExpAA').value==='1'});
+  S('expenses',e);closeModal();renderExpenses();
+}
+function editExpenseModal(i){
+  var e=L('expenses',DEFAULT_EXPENSES)[i];
+  var families=L('families',DEFAULT_FAMILIES);
+  var html=modalField('用途','<input id="mExpPurpose" value="'+esc(e.purpose)+'">');
+  html+=modalField('金额 (¥)','<input id="mExpAmount" type="number" step="0.01" min="0" value="'+e.amount.toFixed(2)+'">');
+  html+=modalField('垫付人','<select id="mExpPayer">'+families.map(function(f){return '<option value="'+esc(f.name)+'"'+(f.name===e.payer?' selected':'')+'>'+esc(f.name)+'</option>'}).join('')+'</select>');
+  html+=modalField('计入AA','<select id="mExpAA"><option value="1"'+(e.inAA?' selected':'')+'>是 ⚖️</option><option value="0"'+(e.inAA?'':' selected')+'>否</option></select>');
+  html+='<div class="modal-actions"><button class="btn btn-outline" onclick="closeModal()">取消</button>';
+  html+='<button class="btn btn-primary" onclick="saveEditExpense('+i+')">保存</button></div>';
+  openModal('编辑花费',html);
+}
+function saveEditExpense(i){
+  var purpose=document.getElementById('mExpPurpose').value.trim();
+  var amount=parseFloat(document.getElementById('mExpAmount').value);
+  if(!purpose||isNaN(amount)||amount<=0){T('请填写用途和金额');return}
+  var e=L('expenses',DEFAULT_EXPENSES);
+  e[i].purpose=purpose;e[i].amount=amount;e[i].payer=document.getElementById('mExpPayer').value;
+  e[i].inAA=document.getElementById('mExpAA').value==='1';
+  S('expenses',e);closeModal();renderExpenses();
+}
+
+/* ================================================================
+   AA (EXPENSE SPLITTING)
+   ================================================================ */
+function renderAA(){
+  var expenses=L('expenses',DEFAULT_EXPENSES);
+  var families=L('families',DEFAULT_FAMILIES);
+  var aaExpenses=expenses.filter(function(e){return e.inAA});
+  var totalAA=aaExpenses.reduce(function(s,e){return s+e.amount},0);
+
+  var html='';
+  // Sub-tabs
+  html+='<div class="sup-subtabs">';
+  html+='<div class="sup-subtab'+(aaMode==='family'?' active':'')+'" onclick="aaMode=\'family\';renderAA()">🏠 按家庭均摊</div>';
+  html+='<div class="sup-subtab'+(aaMode==='person'?' active':'')+'" onclick="aaMode=\'person\';renderAA()">👤 按人头均摊</div>';
+  html+='</div>';
+
+  // Summary
+  var nUnits=aaMode==='family'?families.length:families.reduce(function(s,f){return s+f.members.length},0);
+  var perUnit=totalAA/nUnits;
+  html+='<div class="aa-summary">';
+  html+='<div class="aa-sum-card"><div class="aa-num">&yen;'+totalAA.toFixed(0)+'</div><div class="aa-label">AA总金额</div></div>';
+  html+='<div class="aa-sum-card"><div class="aa-num">&yen;'+perUnit.toFixed(0)+'</div><div class="aa-label">每'+(aaMode==='family'?'方':'人')+'均摊</div></div>';
+  html+='<div class="aa-sum-card"><div class="aa-num">'+nUnits+'</div><div class="aa-label">结算单元</div></div>';
+  html+='</div>';
+
+  // Build person→family mapping
+  var personToFamily={};
+  families.forEach(function(f){
+    f.members.forEach(function(m){personToFamily[m]=f.name});
+  });
+
+  // Per-party calculation
+  var partyData={};
+  families.forEach(function(f){
+    var advanced=0;
+    aaExpenses.forEach(function(e){
+      var famName=personToFamily[e.payer]||e.payer;
+      if(famName===f.name)advanced+=e.amount;
+    });
+    var share=aaMode==='family'?perUnit:perUnit*f.members.length;
+    partyData[f.name]={advanced:advanced,share:share,net:advanced-share,members:f.members};
+  });
+
+  // Party cards
+  Object.keys(partyData).forEach(function(name){
+    var d=partyData[name];
+    html+='<div class="aa-party-card">';
+    html+='<div class="party-header"><span class="party-name">🏕️ '+esc(name)+'</span>';
+    html+='<span class="party-members">'+d.members.map(function(m){return esc(m)}).join('、')+' ('+d.members.length+'人)</span></div>';
+    html+='<div class="aa-party-row"><span class="label">垫付金额</span><span class="val">&yen;'+d.advanced.toFixed(2)+'</span></div>';
+    html+='<div class="aa-party-row"><span class="label">应摊金额</span><span class="val">&yen;'+d.share.toFixed(2)+'</span></div>';
+    if(Math.abs(d.net)<0.01){
+      html+='<div class="aa-party-status zero">✅ 已平账，无需结算</div>';
+    } else if(d.net>0){
+      html+='<div class="aa-party-status receive">💚 待收款 &yen;'+d.net.toFixed(2)+'</div>';
+    } else {
+      html+='<div class="aa-party-status pay">❤️ 待付款 &yen;'+Math.abs(d.net).toFixed(2)+'</div>';
+    }
+    html+='</div>';
+  });
+
+  // Transfer plan — minimum transfer count via sorted greedy
+  var debtors=[],creditors=[];
+  Object.keys(partyData).forEach(function(name){
+    var d=partyData[name];
+    if(d.net<-0.001)debtors.push({name:name,amount:Math.round(Math.abs(d.net)*100)/100});
+    else if(d.net>0.001)creditors.push({name:name,amount:Math.round(d.net*100)/100});
+  });
+  // Sort by amount descending for optimal (minimum) transfer count
+  debtors.sort(function(a,b){return b.amount-a.amount});
+  creditors.sort(function(a,b){return b.amount-a.amount});
+
+  if(debtors.length>0&&creditors.length>0){
+    html+='<div class="aa-transfer"><h4>💳 转账方案</h4>';
+    var di=0,ci=0;
+    while(di<debtors.length&&ci<creditors.length){
+      var d=debtors[di],c=creditors[ci];
+      var transfer=Math.min(d.amount,c.amount);
+      html+='<div class="aa-transfer-item">';
+      html+='<span class="from">'+esc(d.name)+'</span> <span class="arrow-tf">→</span> <span class="to">'+esc(c.name)+'</span>';
+      html+='<span class="amount-tf">&yen;'+transfer.toFixed(2)+'</span></div>';
+      d.amount-=transfer;c.amount-=transfer;
+      if(d.amount<0.001)di++;
+      if(c.amount<0.001)ci++;
+    }
+    html+='</div>';
+  } else {
+    if(totalAA===0){
+      html+='<div style="text-align:center;padding:20px;color:var(--text3)">暂无 AA 费用，请先在 💰花费 中添加计入AA的支出</div>';
+    } else {
+      html+='<div style="text-align:center;padding:20px;color:var(--text3)">所有费用已平账 ✅</div>';
+    }
+  }
+
+  document.getElementById('panel-aa').innerHTML=html;
+}
+
+/* ================================================================
+   SHARE
+   ================================================================ */
+function renderShare(){
+  var info=L('info',DEFAULT_INFO);
+  var families=L('families',DEFAULT_FAMILIES);
+  var expenses=L('expenses',DEFAULT_EXPENSES);
+  var aaExpenses=expenses.filter(function(e){return e.inAA});
+  var totalAA=aaExpenses.reduce(function(s,e){return s+e.amount},0);
+  var fg=L('familyGear',DEFAULT_FAMILY_GEAR);
+  var pf=L('publicFood',DEFAULT_PUBLIC_FOOD);
+  var pg=L('publicGear',DEFAULT_PUBLIC_GEAR);
+  var totalPpl=families.reduce(function(s,f){return s+f.members.length},0);
+  var perFamily=totalAA/families.length;
+
+  // Build party data for transfers
+  var personToFamily2={};
+  families.forEach(function(f){
+    f.members.forEach(function(m){personToFamily2[m]=f.name});
+  });
+  var partyData={};
+  families.forEach(function(f){
+    var adv=0;aaExpenses.forEach(function(e){
+      var famName=personToFamily2[e.payer]||e.payer;
+      if(famName===f.name)adv+=e.amount;
+    });
+    partyData[f.name]={advanced:adv,share:perFamily,net:adv-perFamily};
+  });
+
+  var debtors=[],creditors=[];
+  Object.keys(partyData).forEach(function(n){
+    var d=partyData[n];
+    if(d.net<-0.001)debtors.push({name:n,amount:Math.round(Math.abs(d.net)*100)/100});
+    else if(d.net>0.001)creditors.push({name:n,amount:Math.round(d.net*100)/100});
+  });
+  debtors.sort(function(a,b){return b.amount-a.amount});
+  creditors.sort(function(a,b){return b.amount-a.amount});
+
+  var text='【'+esc(info.name)+'】\n';
+  text+='📅 '+esc(info.date)+'  📍 '+esc(info.location)+'\n\n';
+  text+='👨‍👩‍👧‍👦 参与人员：\n';
+  families.forEach(function(f){
+    text+='  🏕️ '+esc(f.name)+'：'+f.members.map(function(m){return esc(m)}).join('、')+'（'+f.members.length+'人）\n';
+  });
+  text+='\n📦 各家自带装备：\n';
+  families.forEach(function(f){
+    text+='  🏕️ '+esc(f.name)+'：\n';
+    var cats=fg[f.name]||[];
+    cats.forEach(function(cat){
+      var items=cat.items.filter(function(it){return it.checked}).map(function(it){return it.name});
+      if(items.length>0)text+='    '+esc(cat.cat)+'：'+items.join('、')+'\n';
+    });
+  });
+  text+='\n🍖 公共食材分配：\n';
+  pf.forEach(function(cat){
+    text+='  【'+esc(cat.cat)+'】\n';
+    cat.items.forEach(function(item){text+='    '+esc(item.name)+'（'+esc(item.qty)+'）→ '+esc(item.assignee)+'\n'});
+  });
+  text+='\n⛺ 公共物资分配：\n';
+  pg.forEach(function(cat){
+    text+='  【'+esc(cat.cat)+'】\n';
+    cat.items.forEach(function(item){text+='    '+esc(item.name)+'（'+esc(item.qty)+'）→ '+esc(item.assignee)+'\n'});
+  });
+  text+='\n💰 AA费用汇总（按家庭均摊）：\n';
+  text+='  AA总金额：¥'+totalAA.toFixed(2)+'  |  每方：¥'+perFamily.toFixed(2)+'\n';
+  aaExpenses.forEach(function(e){text+='    '+esc(e.purpose)+' ¥'+e.amount.toFixed(2)+'（'+esc(e.payer)+'垫付）\n'});
+  text+='\n💳 垫付 & 转账方案：\n';
+  Object.keys(partyData).forEach(function(n){
+    var d=partyData[n];
+    if(d.net>0.001)text+='  💚 '+esc(n)+' 垫付 ¥'+d.advanced.toFixed(2)+'，待收款 ¥'+d.net.toFixed(2)+'\n';
+    else if(d.net<-0.001)text+='  ❤️ '+esc(n)+' 垫付 ¥'+d.advanced.toFixed(2)+'，待付款 ¥'+Math.abs(d.net).toFixed(2)+'\n';
+    else text+='  ✅ '+esc(n)+' 已平账\n';
+  });
+  if(debtors.length>0&&creditors.length>0){
+    text+='\n  转账方案：\n';
+    var di=0,ci=0,td=JSON.parse(JSON.stringify(debtors)),tc=JSON.parse(JSON.stringify(creditors));
+    while(di<td.length&&ci<tc.length){
+      var transfer=Math.min(td[di].amount,tc[ci].amount);
+      text+='    '+esc(td[di].name)+' → '+esc(tc[ci].name)+'：¥'+transfer.toFixed(2)+'\n';
+      td[di].amount-=transfer;tc[ci].amount-=transfer;
+      if(td[di].amount<0.001)di++;if(tc[ci].amount<0.001)ci++;
+    }
+  }
+
+  // Unprepared items
+  var unprepared=[];
+  Object.keys(fg).forEach(function(fam){
+    (fg[fam]||[]).forEach(function(cat){
+      cat.items.forEach(function(item){
+        if(!item.checked)unprepared.push(fam+' - '+item.name);
+      });
+    });
+  });
+
+  var html='';
+  html+='<div class="share-actions">';
+  html+='<button class="btn btn-primary" style="flex:1" onclick="copyShareText()">📋 复制文案</button>';
+  html+='</div>';
+
+  html+='<div class="share-preview">';
+  var lines=text.split('\n');
+  lines.forEach(function(line){
+    if(line.startsWith('【'))html+='<div class="msg-title">'+esc(line)+'</div>';
+    else if(line.match(/^[📅👨📦🍖⛺💰💳]/))html+='<div class="msg-h3">'+esc(line)+'</div>';
+    else if(line.trim())html+=esc(line)+'<br>';
+    else html+='<br>';
+  });
+  html+='</div>';
+
+  if(unprepared.length>0){
+    html+='<div class="share-tips"><strong>⚠️ 尚未准备的物品：</strong><br>'+unprepared.map(function(u){return '· '+esc(u)}).join('<br>')+'</div>';
+  }
+
+  html+='<div class="share-watermark">📱 由「露营小助手」生成</div>';
+
+  document.getElementById('panel-share').innerHTML=html;
+  window._shareText=text;
+}
+
+function copyShareText(){
+  var text=window._shareText||'';
+  if(navigator.clipboard){
+    navigator.clipboard.writeText(text).then(function(){T('已复制到剪贴板')}).catch(function(){T('复制失败，请手动复制')});
+  } else {
+    var ta=document.createElement('textarea');ta.value=text;
+    ta.style.position='fixed';ta.style.left='-9999px';document.body.appendChild(ta);
+    ta.select();document.execCommand('copy');document.body.removeChild(ta);T('已复制到剪贴板');
+  }
+}
+
+/* ================================================================
+   INIT
+   ================================================================ */
+(function(){
+  var plans=readPlans();
+
+  // Migration: if no plans exist, try migrating old single-plan data
+  if(plans.length===0){
+    var oldInfo=null;
+    try{oldInfo=localStorage.getItem('camping_info')}catch(e){}
+    if(oldInfo){
+      // Migrate old data
+      var plan={
+        name:(JSON.parse(oldInfo)||{}).name||'我的露营',
+        info:JSON.parse(localStorage.getItem('camping_info')||'null')||DEFAULT_INFO,
+        families:JSON.parse(localStorage.getItem('camping_families')||'null')||DEFAULT_FAMILIES,
+        familyGear:JSON.parse(localStorage.getItem('camping_familyGear')||'null')||DEFAULT_FAMILY_GEAR,
+        publicFood:JSON.parse(localStorage.getItem('camping_publicFood')||'null')||DEFAULT_PUBLIC_FOOD,
+        publicGear:JSON.parse(localStorage.getItem('camping_publicGear')||'null')||DEFAULT_PUBLIC_GEAR,
+        expenses:JSON.parse(localStorage.getItem('camping_expenses')||'null')||DEFAULT_EXPENSES,
+        itinerary:JSON.parse(localStorage.getItem('camping_itinerary')||'null')||DEFAULT_ITINERARY,
+        mapConfig:JSON.parse(localStorage.getItem('camping_mapConfig')||'null')||{lng:116.67,lat:40.58,name:'北京怀柔白河湾'}
+      };
+      savePlans([plan]);
+      localStorage.setItem('camping_activePlan','0');
+    } else {
+      // Fresh start: create one plan with sample data
+      var plan=makeDefaultPlan(DEFAULT_INFO.name,DEFAULT_INFO,DEFAULT_FAMILIES,DEFAULT_FAMILY_GEAR,DEFAULT_EXPENSES,DEFAULT_PUBLIC_FOOD,DEFAULT_PUBLIC_GEAR,DEFAULT_ITINERARY);
+      savePlans([plan]);
+      localStorage.setItem('camping_activePlan','0');
+    }
+  }
+
+  // Compatibility: migrate old family member names
+  var plans2=readPlans();
+  var needSave=false;
+  plans2.forEach(function(plan){
+    var needMigrate=false;
+    (plan.families||[]).forEach(function(f){
+      f.members.forEach(function(m){
+        if(m==='张丽'||m==='小李')needMigrate=true;
+      });
+    });
+    if(needMigrate){
+      plan.families=DEFAULT_FAMILIES;
+      plan.expenses=DEFAULT_EXPENSES;
+      needSave=true;
+    }
+  });
+  if(needSave)savePlans(plans2);
+
+  // Compatibility: check old expenses lacking payer field
+  var activePlan=getActivePlan();
+  if(activePlan){
+    var _exp=activePlan.expenses||[];
+    if(_exp.length>0&&!('payer' in _exp[0])){
+      activePlan.expenses=DEFAULT_EXPENSES;
+      saveActivePlan(activePlan);
+    }
+  }
+
+  // Render home as default page
+  switchTab('home');
+})();
+</script>
+</body>
+</html>
