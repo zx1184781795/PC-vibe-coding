@@ -799,9 +799,9 @@ function saveActivePlan(plan){
 function exportData(){
   var plan=getActivePlan();
   if(!plan){T('暂无数据可导出');return;}
-  var info=L('info',DEFAULT_INFO);
-  var families=L('families',DEFAULT_FAMILIES);
-  var expenses=L('expenses',[]);
+  var info=readLocal('info',DEFAULT_INFO);
+  var families=readLocal('families',DEFAULT_FAMILIES);
+  var expenses=readLocal('expenses',[]);
   var data={
     plan:plan.name,
     info:info,
@@ -816,19 +816,19 @@ function exportData(){
   var a=document.createElement('a');
   a.href=url;a.download=(plan.name||'露营计划')+'.json';
   document.body.appendChild(a);a.click();
-  document.body.removeChild(a);URL.revokeObjectURL(url);
+  document.body.removeChild(a);URL.revokeObjectURreadLocal(url);
   T('已导出');
 }
 
-// L / S — now proxy through active plan
-function L(k,d){
+// readLocal / writeLocal — now proxy through active plan
+function readLocal(k,d){
   try{
     var p=getActivePlan();if(p&&(k in p))return p[k];
     // fallback: read raw localStorage (backward compat during migration)
     var v=localStorage.getItem('camping_'+k);return v?JSON.parse(v):d;
   }catch(e){return d}
 }
-function S(k,v){
+function writeLocal(k,v){
   try{
     var p=getActivePlan();if(p){p[k]=v;saveActivePlan(p);return}
   }catch(e){}
@@ -1030,7 +1030,7 @@ function deletePlan(idx){
 
 /* ===== HEADER ===== */
 function renderPlanHeader(){
-  var info=L('info',DEFAULT_INFO);
+  var info=readLocal('info',DEFAULT_INFO);
   var plan=getActivePlan();
   var planName=plan?plan.name:(info?info.name:'我的露营');
   document.getElementById('headerTitle').textContent=planName;
@@ -1170,7 +1170,7 @@ function exportPlan(idx){
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+  URL.revokeObjectURreadLocal(url);
   T('计划已导出');
 }
 
@@ -1342,13 +1342,13 @@ function renderWeatherCard(){
    OVERVIEW
    ================================================================ */
 function renderOverview(){
-  var info=L('info',DEFAULT_INFO);
+  var info=readLocal('info',DEFAULT_INFO);
   var plan=getActivePlan();
   var planName=plan?plan.name:(info?info.name:'我的露营');
-  var families=L('families',DEFAULT_FAMILIES);
+  var families=readLocal('families',DEFAULT_FAMILIES);
   var totalPpl=0;families.forEach(function(f){totalPpl+=f.members.length});
   var totalItems=countAllSupplies();
-  var mapConfig=L('mapConfig',{lng:116.67,lat:40.58,name:'北京怀柔白河湾'});
+  var mapConfig=readLocal('mapConfig',{lng:116.67,lat:40.58,name:'北京怀柔白河湾'});
 
   var html='';
 
@@ -1432,12 +1432,12 @@ function updateMapConfig(){
   if(isNaN(lng)||isNaN(lat)){T('请输入有效的经纬度');return}
   var plan=getActivePlan();
   if(plan){plan.mapConfig={lng:lng,lat:lat,name:name};saveActivePlan(plan)}
-  else{S('mapConfig',{lng:lng,lat:lat,name:name})}
+  else{writeLocal('mapConfig',{lng:lng,lat:lat,name:name})}
   weatherData=null;renderOverview();T('地图已更新');
 }
 
 function editCampInfo(){
-  var info=L('info',DEFAULT_INFO);
+  var info=readLocal('info',DEFAULT_INFO);
   var plan=getActivePlan();
   var planName=plan?plan.name:'';
   var html=modalField('计划名称','<input id="mInfoPlanName" value="'+esc(planName)+'">');
@@ -1457,13 +1457,13 @@ function saveCampInfo(){
     date:document.getElementById('mInfoDate').value.trim()||'待定',
     location:document.getElementById('mInfoLoc').value.trim()||'待定'
   };
-  S('info',info);
+  writeLocal('info',info);
   closeModal();renderOverview();renderHome();
 }
 
 /* ===== Family Management ===== */
 function editFamilyModal(idx){
-  var families=L('families',DEFAULT_FAMILIES);
+  var families=readLocal('families',DEFAULT_FAMILIES);
   var f=families[idx];
   var html=modalField('家庭名称','<input id="mFamName" value="'+esc(f.name)+'">');
   html+='<div class="modal-field"><label>家庭成员</label>';
@@ -1481,7 +1481,7 @@ function editFamilyModal(idx){
 }
 
 function saveFamily(idx){
-  var families=L('families',DEFAULT_FAMILIES);
+  var families=readLocal('families',DEFAULT_FAMILIES);
   var oldName=families[idx].name;
   var newName=document.getElementById('mFamName').value.trim();
   if(!newName){T('请输入家庭名称');return}
@@ -1568,11 +1568,11 @@ function updateFamilyReferences(oldName,newName){
 
 function countAllSupplies(){
   var n=0;
-  var fg=L('familyGear',DEFAULT_FAMILY_GEAR);
+  var fg=readLocal('familyGear',DEFAULT_FAMILY_GEAR);
   Object.values(fg).forEach(function(cats){cats.forEach(function(c){n+=c.items.length})});
-  var pf=L('publicFood',DEFAULT_PUBLIC_FOOD);
+  var pf=readLocal('publicFood',DEFAULT_PUBLIC_FOOD);
   pf.forEach(function(c){n+=c.items.length});
-  var pg=L('publicGear',DEFAULT_PUBLIC_GEAR);
+  var pg=readLocal('publicGear',DEFAULT_PUBLIC_GEAR);
   pg.forEach(function(c){n+=c.items.length});
   return n;
 }
@@ -1583,7 +1583,7 @@ function countAllSupplies(){
 var supFamilyColors={'张旭家':'#C8651A','小明家':'#2E86AB','小红家':'#A61B6E'};
 
 function renderSupplies(){
-  var families=L('families',DEFAULT_FAMILIES);
+  var families=readLocal('families',DEFAULT_FAMILIES);
   var html='';
 
   // Sub-tabs
@@ -1640,8 +1640,8 @@ function renderSuppliesContent(){
   var html='';
 
   if(suppliesSubtab==='family'){
-    var fg=L('familyGear',DEFAULT_FAMILY_GEAR);
-    var families=L('families',DEFAULT_FAMILIES);
+    var fg=readLocal('familyGear',DEFAULT_FAMILY_GEAR);
+    var families=readLocal('families',DEFAULT_FAMILIES);
 
     // Flatten: collect all items by category, across families
     var catMap={};
@@ -1682,7 +1682,7 @@ function renderSuppliesContent(){
     }
 
   } else {
-    var list=suppliesSubtab==='food'?L('publicFood',DEFAULT_PUBLIC_FOOD):L('publicGear',DEFAULT_PUBLIC_GEAR);
+    var list=suppliesSubtab==='food'?readLocal('publicFood',DEFAULT_PUBLIC_FOOD):readLocal('publicGear',DEFAULT_PUBLIC_GEAR);
 
     if(list.length===0){
       html='<div style="text-align:center;padding:40px;color:var(--text3)">暂无物资，点击右下角 ＋ 添加</div>';
@@ -1720,7 +1720,7 @@ function updateSuppliesProgress(){
   if(suppliesSubtab==='family'){
     el.style.display='inline-flex';
     var total=0,checked=0;
-    var fg=L('familyGear',DEFAULT_FAMILY_GEAR);
+    var fg=readLocal('familyGear',DEFAULT_FAMILY_GEAR);
     Object.values(fg).forEach(function(cats){
       cats.forEach(function(cat){
         cat.items.forEach(function(item){total++;if(item.checked)checked++;});
@@ -1729,7 +1729,7 @@ function updateSuppliesProgress(){
     el.textContent=checked+'/'+total+' 已备';
   } else {
     var key=suppliesSubtab==='food'?'publicFood':'publicGear';
-    var list=L(key,suppliesSubtab==='food'?DEFAULT_PUBLIC_FOOD:DEFAULT_PUBLIC_GEAR);
+    var list=readLocal(key,suppliesSubtab==='food'?DEFAULT_PUBLIC_FOOD:DEFAULT_PUBLIC_GEAR);
     var total=0,checked=0;
     list.forEach(function(cat){
       cat.items.forEach(function(item){total++;if(item.checked)checked++;});
@@ -1740,24 +1740,24 @@ function updateSuppliesProgress(){
 }
 
 function toggleFamilyItemCheck(fam,cat,name,checked){
-  var fg=L('familyGear',DEFAULT_FAMILY_GEAR);
+  var fg=readLocal('familyGear',DEFAULT_FAMILY_GEAR);
   if(fg[fam]){
     var catObj=fg[fam].find(function(c){return c.cat===cat});
     if(catObj){
       var item=catObj.items.find(function(it){return it.name===name});
-      if(item){item.checked=checked;S('familyGear',fg)}
+      if(item){item.checked=checked;writeLocal('familyGear',fg)}
     }
   }
   renderSuppliesContent();updateSuppliesProgress();
 }
 
 function deleteFamilyItemByName(fam,cat,name){
-  var fg=L('familyGear',DEFAULT_FAMILY_GEAR);
+  var fg=readLocal('familyGear',DEFAULT_FAMILY_GEAR);
   if(fg[fam]){
     var catObj=fg[fam].find(function(c){return c.cat===cat});
     if(catObj){
       catObj.items=catObj.items.filter(function(it){return it.name!==name});
-      S('familyGear',fg)
+      writeLocal('familyGear',fg)
     }
   }
   renderSuppliesContent();updateSuppliesProgress();renderOverview();
@@ -1765,26 +1765,26 @@ function deleteFamilyItemByName(fam,cat,name){
 
 function deletePublicItem(ci,ii){
   var key=suppliesSubtab==='food'?'publicFood':'publicGear';
-  var list=L(key,suppliesSubtab==='food'?DEFAULT_PUBLIC_FOOD:DEFAULT_PUBLIC_GEAR);
+  var list=readLocal(key,suppliesSubtab==='food'?DEFAULT_PUBLIC_FOOD:DEFAULT_PUBLIC_GEAR);
   list[ci].items.splice(ii,1);
-  S(key,list);renderSuppliesContent();renderOverview();
+  writeLocal(key,list);renderSuppliesContent();renderOverview();
 }
 
 function togglePublicItemCheck(ci,ii,checked){
   var key=suppliesSubtab==='food'?'publicFood':'publicGear';
-  var list=L(key,suppliesSubtab==='food'?DEFAULT_PUBLIC_FOOD:DEFAULT_PUBLIC_GEAR);
-  if(list[ci]&&list[ci].items[ii]){list[ci].items[ii].checked=checked;S(key,list)}
+  var list=readLocal(key,suppliesSubtab==='food'?DEFAULT_PUBLIC_FOOD:DEFAULT_PUBLIC_GEAR);
+  if(list[ci]&&list[ci].items[ii]){list[ci].items[ii].checked=checked;writeLocal(key,list)}
   renderSuppliesContent();updateSuppliesProgress();
 }
 
 /* ===== Modal: Add Item ===== */
 function openAddModal(){
-  var families=L('families',DEFAULT_FAMILIES);
+  var families=readLocal('families',DEFAULT_FAMILIES);
   var overlay=document.getElementById('supModalOverlay');
   var modal=document.getElementById('supModal');
 
   if(suppliesSubtab==='family'){
-    var fg=L('familyGear',DEFAULT_FAMILY_GEAR);
+    var fg=readLocal('familyGear',DEFAULT_FAMILY_GEAR);
     var allCats=[];var seen={};
     Object.values(fg).forEach(function(cats){
       cats.forEach(function(c){if(!seen[c.cat]){seen[c.cat]=true;allCats.push(c.cat)}});
@@ -1806,7 +1806,7 @@ function openAddModal(){
     overlay.classList.add('show');
 
   } else {
-    var catList=suppliesSubtab==='food'?L('publicFood',DEFAULT_PUBLIC_FOOD):L('publicGear',DEFAULT_PUBLIC_GEAR);
+    var catList=suppliesSubtab==='food'?readLocal('publicFood',DEFAULT_PUBLIC_FOOD):readLocal('publicGear',DEFAULT_PUBLIC_GEAR);
     var catNames=catList.map(function(c){return c.cat});
     if(catNames.length===0)catNames=['默认分类'];
 
@@ -1838,12 +1838,12 @@ function saveNewFamilyItem(){
   var fam=document.getElementById('supAddFam').value;
   if(!name)return;
 
-  var fg=L('familyGear',DEFAULT_FAMILY_GEAR);
+  var fg=readLocal('familyGear',DEFAULT_FAMILY_GEAR);
   if(!fg[fam])fg[fam]=[];
   var catObj=fg[fam].find(function(c){return c.cat===cat});
   if(!catObj){catObj={cat:cat,items:[]};fg[fam].push(catObj)}
   catObj.items.push({name:name,qty:qty,checked:false});
-  S('familyGear',fg);
+  writeLocal('familyGear',fg);
   closeAddModal();renderSuppliesContent();updateSuppliesProgress();renderOverview();
 }
 
@@ -1855,7 +1855,7 @@ function saveNewPublicItem(){
   if(!name||!qty)return;
 
   var key=suppliesSubtab==='food'?'publicFood':'publicGear';
-  var list=L(key,suppliesSubtab==='food'?DEFAULT_PUBLIC_FOOD:DEFAULT_PUBLIC_GEAR);
+  var list=readLocal(key,suppliesSubtab==='food'?DEFAULT_PUBLIC_FOOD:DEFAULT_PUBLIC_GEAR);
 
   // Handle new category
   if(cat==='__new__'){
@@ -1865,20 +1865,20 @@ function saveNewPublicItem(){
   var catObj=list.find(function(c){return c.cat===cat});
   if(!catObj){catObj={cat:cat,items:[]};list.push(catObj)}
   catObj.items.push({name:name,qty:qty,assignee:fam});
-  S(key,list);
+  writeLocal(key,list);
   closeAddModal();renderSuppliesContent();renderOverview();
 }
 
 /* ===== Modal: Edit Item ===== */
 function openEditModal(type,arg1,arg2,arg3){
-  var families=L('families',DEFAULT_FAMILIES);
+  var families=readLocal('families',DEFAULT_FAMILIES);
   var overlay=document.getElementById('supModalOverlay');
   var modal=document.getElementById('supModal');
 
   if(type==='family'){
     // arg1=fam, arg2=cat, arg3=itemName
     var fam=arg1,cat=arg2,itemName=arg3;
-    var fg=L('familyGear',DEFAULT_FAMILY_GEAR);
+    var fg=readLocal('familyGear',DEFAULT_FAMILY_GEAR);
     var item=fg[fam].find(function(c){return c.cat===cat}).items.find(function(it){return it.name===itemName});
 
     var html='<h3>编辑物品</h3>';
@@ -1893,7 +1893,7 @@ function openEditModal(type,arg1,arg2,arg3){
     // arg1=catIdx, arg2=itemIdx
     var ci=arg1,ii=arg2;
     var key=suppliesSubtab==='food'?'publicFood':'publicGear';
-    var list=L(key,suppliesSubtab==='food'?DEFAULT_PUBLIC_FOOD:DEFAULT_PUBLIC_GEAR);
+    var list=readLocal(key,suppliesSubtab==='food'?DEFAULT_PUBLIC_FOOD:DEFAULT_PUBLIC_GEAR);
     var item=list[ci].items[ii];
 
     var html='<h3>编辑</h3>';
@@ -1913,9 +1913,9 @@ function saveEditFamilyItem(fam,cat,oldName){
   var newName=document.getElementById('supEditName').value.trim();
   var newQty=document.getElementById('supEditQty').value.trim();
   if(!newName)return;
-  var fg=L('familyGear',DEFAULT_FAMILY_GEAR);
+  var fg=readLocal('familyGear',DEFAULT_FAMILY_GEAR);
   var item=fg[fam].find(function(c){return c.cat===cat}).items.find(function(it){return it.name===oldName});
-  if(item){item.name=newName;item.qty=newQty;S('familyGear',fg)}
+  if(item){item.name=newName;item.qty=newQty;writeLocal('familyGear',fg)}
   closeAddModal();renderSuppliesContent();updateSuppliesProgress();
 }
 
@@ -1925,10 +1925,10 @@ function saveEditPublicItem(ci,ii){
   var newFam=document.getElementById('supEditFam').value;
   if(!newName)return;
   var key=suppliesSubtab==='food'?'publicFood':'publicGear';
-  var list=L(key,suppliesSubtab==='food'?DEFAULT_PUBLIC_FOOD:DEFAULT_PUBLIC_GEAR);
+  var list=readLocal(key,suppliesSubtab==='food'?DEFAULT_PUBLIC_FOOD:DEFAULT_PUBLIC_GEAR);
   var item=list[ci].items[ii];
   item.name=newName;item.qty=newQty;item.assignee=newFam;
-  S(key,list);
+  writeLocal(key,list);
   closeAddModal();renderSuppliesContent();
 }
 
@@ -1975,8 +1975,8 @@ function deleteCategory(catName){
    ================================================================ */
 function renderExpenses(){
   var plan=getActivePlan();
-  var expenses=L('expenses',DEFAULT_EXPENSES);
-  var families=L('families',DEFAULT_FAMILIES);
+  var expenses=readLocal('expenses',DEFAULT_EXPENSES);
+  var families=readLocal('families',DEFAULT_FAMILIES);
   var html='';
 
   // Compute totals first
@@ -2030,13 +2030,13 @@ function renderExpenses(){
 }
 
 function toggleExpenseAA(i){
-  var e=L('expenses',DEFAULT_EXPENSES);e[i].inAA=!e[i].inAA;S('expenses',e);renderExpenses();
+  var e=readLocal('expenses',DEFAULT_EXPENSES);e[i].inAA=!e[i].inAA;writeLocal('expenses',e);renderExpenses();
 }
 function deleteExpense(i){
-  var e=L('expenses',DEFAULT_EXPENSES);e.splice(i,1);S('expenses',e);renderExpenses();
+  var e=readLocal('expenses',DEFAULT_EXPENSES);e.splice(i,1);writeLocal('expenses',e);renderExpenses();
 }
 function addExpenseModal(){
-  var families=L('families',DEFAULT_FAMILIES);
+  var families=readLocal('families',DEFAULT_FAMILIES);
   var html=modalField('用途','<input id="mExpPurpose" placeholder="如：食材采购">');
   html+=modalField('金额 (¥)','<input id="mExpAmount" type="number" step="0.01" min="0" placeholder="0.00">');
   html+=modalField('垫付人','<select id="mExpPayer">'+families.map(function(f){return '<option value="'+esc(f.name)+'">'+esc(f.name)+'</option>'}).join('')+'</select>');
@@ -2049,13 +2049,13 @@ function saveNewExpense(){
   var purpose=document.getElementById('mExpPurpose').value.trim();
   var amount=parseFloat(document.getElementById('mExpAmount').value);
   if(!purpose||isNaN(amount)||amount<=0){T('请填写用途和金额');return}
-  var e=L('expenses',DEFAULT_EXPENSES);
+  var e=readLocal('expenses',DEFAULT_EXPENSES);
   e.push({purpose:purpose,amount:amount,payer:document.getElementById('mExpPayer').value,inAA:document.getElementById('mExpAA').value==='1'});
-  S('expenses',e);closeModal();renderExpenses();
+  writeLocal('expenses',e);closeModal();renderExpenses();
 }
 function editExpenseModal(i){
-  var e=L('expenses',DEFAULT_EXPENSES)[i];
-  var families=L('families',DEFAULT_FAMILIES);
+  var e=readLocal('expenses',DEFAULT_EXPENSES)[i];
+  var families=readLocal('families',DEFAULT_FAMILIES);
   var html=modalField('用途','<input id="mExpPurpose" value="'+esc(e.purpose)+'">');
   html+=modalField('金额 (¥)','<input id="mExpAmount" type="number" step="0.01" min="0" value="'+e.amount.toFixed(2)+'">');
   html+=modalField('垫付人','<select id="mExpPayer">'+families.map(function(f){return '<option value="'+esc(f.name)+'"'+(f.name===e.payer?' selected':'')+'>'+esc(f.name)+'</option>'}).join('')+'</select>');
@@ -2068,18 +2068,18 @@ function saveEditExpense(i){
   var purpose=document.getElementById('mExpPurpose').value.trim();
   var amount=parseFloat(document.getElementById('mExpAmount').value);
   if(!purpose||isNaN(amount)||amount<=0){T('请填写用途和金额');return}
-  var e=L('expenses',DEFAULT_EXPENSES);
+  var e=readLocal('expenses',DEFAULT_EXPENSES);
   e[i].purpose=purpose;e[i].amount=amount;e[i].payer=document.getElementById('mExpPayer').value;
   e[i].inAA=document.getElementById('mExpAA').value==='1';
-  S('expenses',e);closeModal();renderExpenses();
+  writeLocal('expenses',e);closeModal();renderExpenses();
 }
 
 /* ================================================================
    AA (EXPENSE SPLITTING)
    ================================================================ */
 function renderAA(){
-  var expenses=L('expenses',DEFAULT_EXPENSES);
-  var families=L('families',DEFAULT_FAMILIES);
+  var expenses=readLocal('expenses',DEFAULT_EXPENSES);
+  var families=readLocal('families',DEFAULT_FAMILIES);
   var aaExpenses=expenses.filter(function(e){return e.inAA});
   var totalAA=aaExpenses.reduce(function(s,e){return s+e.amount},0);
 
@@ -2175,14 +2175,14 @@ function renderAA(){
    SHARE
    ================================================================ */
 function renderShare(){
-  var info=L('info',DEFAULT_INFO);
-  var families=L('families',DEFAULT_FAMILIES);
-  var expenses=L('expenses',DEFAULT_EXPENSES);
+  var info=readLocal('info',DEFAULT_INFO);
+  var families=readLocal('families',DEFAULT_FAMILIES);
+  var expenses=readLocal('expenses',DEFAULT_EXPENSES);
   var aaExpenses=expenses.filter(function(e){return e.inAA});
   var totalAA=aaExpenses.reduce(function(s,e){return s+e.amount},0);
-  var fg=L('familyGear',DEFAULT_FAMILY_GEAR);
-  var pf=L('publicFood',DEFAULT_PUBLIC_FOOD);
-  var pg=L('publicGear',DEFAULT_PUBLIC_GEAR);
+  var fg=readLocal('familyGear',DEFAULT_FAMILY_GEAR);
+  var pf=readLocal('publicFood',DEFAULT_PUBLIC_FOOD);
+  var pg=readLocal('publicGear',DEFAULT_PUBLIC_GEAR);
   var totalPpl=families.reduce(function(s,f){return s+f.members.length},0);
   var perFamily=totalAA/families.length;
 
