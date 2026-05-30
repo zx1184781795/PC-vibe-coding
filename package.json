@@ -1,14 +1,16 @@
-{
-  "name": "vibe-coding",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "start": "npx serve .",
-    "dev": "npx live-server --port=3000 --open=index.html",
-    "test": "echo \"Todo: add tests\" && exit 0"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC"
+﻿{
+    "name":  "pc-vibe-coding",
+    "version":  "1.0.0",
+    "description":  "",
+    "main":  "index.js",
+    "scripts":  {
+                    "start":  "npx serve .",
+                    "dev":  "npx live-server --port=3000 --open=index.html",
+                    "test":  "echo \"Todo: add tests\" \u0026\u0026 exit 0"
+                },
+    "keywords":  [
+
+                 ],
+    "author":  "",
+    "license":  "ISC"
 }
