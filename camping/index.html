@@ -9,42 +9,44 @@
 /* ===== Reset ===== */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#FBF5EB;--card:#fff;--primary:#C8651A;--primary-dark:#a85216;
-  --primary-light:#FFF5ED;--text:#2C1A0E;--text2:#6B5D52;--text3:#9B8D82;
-  --border:#EBE3D8;--green:#4CAF50;--red:#E53935;--green-bg:#E8F5E9;
-  --red-bg:#FFEBEE;--radius:10px;--radius-lg:16px;--shadow:0 2px 12px rgba(0,0,0,.05);
-  --shadow-lg:0 4px 24px rgba(0,0,0,.08);
+  --bg:#F0F4F0;--card:#FFFFFF;--primary:#2D6A4F;--primary-dark:#1B4332;
+  --primary-light:#D8F3DC;--text:#1B2A1D;--text2:#5C7A5E;--text3:#8A9E8C;
+  --border:#C8D6C9;--green:#2D6A4F;--red:#E76F51;--green-bg:#D8F3DC;
+  --red-bg:#FDE8E4;--radius:14px;--radius-lg:20px;--shadow:0 2px 16px rgba(45,106,79,.06);
+  --shadow-lg:0 8px 32px rgba(45,106,79,.08);--accent:#E76F51;--accent-light:#FDE8E4;
 }
 html,body{height:100%;overflow:hidden}
 body{
-  font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
-  background:#ede9e2;color:var(--text);font-size:16px;line-height:1.6;
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
+  background:#E8EDE8;color:var(--text);font-size:15px;line-height:1.6;
   display:flex;justify-content:center;
 }
 #app{
   width:100%;max-width:540px;height:100vh;height:100dvh;
   display:flex;flex-direction:column;background:var(--bg);
-  position:relative;overflow:hidden;box-shadow:var(--shadow-lg);
+  position:relative;overflow:hidden;box-shadow:0 0 60px rgba(0,0,0,.08);
 }
+
 /* ===== Fixed Header ===== */
 #header{
-  display:none;flex-shrink:0;height:56px;align-items:center;gap:4px;
-  padding:0 8px;background:rgba(255,255,255,.96);z-index:500;
-  -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+  display:none;flex-shrink:0;height:56px;align-items:center;gap:6px;
+  padding:0 12px;background:rgba(240,244,240,.88);z-index:500;
+  -webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);
+  border-bottom:1px solid rgba(45,106,79,.08);
 }
 #header.show{display:flex}
 .btn-icon{
   display:flex;align-items:center;justify-content:center;
-  width:40px;height:39px;padding:8px;border:none;background:none;
-  font-size:20px;color:var(--text2);cursor:pointer;
-  -webkit-tap-highlight-color:transparent;
+  width:38px;height:38px;padding:8px;border:none;background:none;
+  font-size:20px;color:var(--text2);cursor:pointer;border-radius:12px;
+  -webkit-tap-highlight-color:transparent;transition:background .15s;
 }
+.btn-icon:active{background:rgba(45,106,79,.08)}
 .header-center{
   flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center;
   cursor:pointer;-webkit-tap-highlight-color:transparent;
 }
 .header-title{
-  font-family:'ZCOOL XiaoWei','Noto Sans SC',serif;
   font-size:17px;font-weight:700;color:var(--text);
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
 }
@@ -52,60 +54,72 @@ body{
   font-size:12px;color:var(--text2);margin-top:1px;
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
 }
+
 /* ===== Plan Dropdown (in header) ===== */
 .header-plan-dropdown{
-  display:none;position:absolute;top:56px;left:8px;right:8px;
+  display:none;position:absolute;top:56px;left:12px;right:12px;
   background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow-lg);
   z-index:600;overflow:hidden;max-height:280px;overflow-y:auto;
+  border:1px solid var(--border);
 }
 .header-plan-dropdown.show{display:block}
-/* ===== Tab Bar ===== */
+
+/* ===== Tab Bar — Frosted Glass Pill ===== */
 #tabbar{
-  position:sticky;bottom:0;display:flex;flex-shrink:0;
-  background:rgba(255,255,255,.96);
-  -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
-  padding-bottom:env(safe-area-inset-bottom,0);z-index:500;height:72px;
+  display:flex;flex-shrink:0;
+  background:rgba(255,255,255,.82);
+  -webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);
+  padding:8px 12px;padding-bottom:calc(8px + env(safe-area-inset-bottom,0));
+  z-index:500;gap:6px;margin:0 8px 6px;border-radius:20px;
+  box-shadow:0 -2px 20px rgba(45,106,79,.06);
 }
 .tab{
-  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;
-  padding:8px 4px;cursor:pointer;font-size:11px;font-weight:400;
-  color:var(--text2);transition:color .18s;user-select:none;
-  -webkit-tap-highlight-color:transparent;gap:3px;position:relative;
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:8px 4px;cursor:pointer;font-size:11px;font-weight:500;
+  color:var(--text2);transition:all .2s;user-select:none;
+  -webkit-tap-highlight-color:transparent;gap:2px;position:relative;
+  border-radius:14px;
 }
-.tab .tab-emoji{font-size:22px;line-height:1}
-.tab.active{color:var(--primary);font-weight:700;letter-spacing:.02em}
-.tab.active::before{
-  content:'';position:absolute;top:0;left:25%;width:50%;height:2.5px;
-  background:var(--primary);border-radius:0 0 3px 3px;
+.tab .tab-emoji{font-size:20px;line-height:1}
+.tab.active{
+  color:var(--primary);font-weight:700;letter-spacing:.02em;
+  background:var(--primary-light);
 }
+.tab.active::before{display:none}
+.tab:active{background:rgba(45,106,79,.06)}
+
 /* ===== Content ===== */
 #content{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch}
-.panel{display:none;padding:0 16px 24px;min-height:100%}
-.panel.active{display:block}
+.panel{display:none;padding:0 12px 24px;min-height:100%}
+.panel.active{display:block;animation:fadeIn .25s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
 /* ===== Cards ===== */
 .card{
-  background:var(--card);border-radius:var(--radius-lg);padding:18px;
-  margin-bottom:12px;box-shadow:var(--shadow);
+  background:var(--card);border-radius:var(--radius-lg);padding:20px;
+  margin-bottom:14px;box-shadow:var(--shadow);
+  border:1px solid rgba(45,106,79,.04);
 }
 .card-title{
-  font-size:15px;font-weight:700;color:var(--text);margin-bottom:14px;
+  font-size:15px;font-weight:700;color:var(--text);margin-bottom:16px;
   display:flex;align-items:center;gap:8px;
 }
 .card-title .icon{font-size:22px}
+
 /* ===== Buttons ===== */
 .btn{
   display:inline-flex;align-items:center;justify-content:center;gap:6px;
-  padding:10px 20px;border:none;border-radius:var(--radius);font-size:14px;
+  padding:10px 20px;border:none;border-radius:12px;font-size:14px;
   font-weight:600;cursor:pointer;transition:all .15s;font-family:inherit;
   -webkit-tap-highlight-color:transparent;white-space:nowrap;
 }
 .btn-primary{background:var(--primary);color:#fff}
-.btn-primary:active{background:var(--primary-dark)}
+.btn-primary:active{background:var(--primary-dark);transform:scale(.97)}
 .btn-outline{background:transparent;border:1.5px solid var(--primary);color:var(--primary)}
-.btn-outline:active{background:var(--primary-light)}
-.btn-sm{padding:6px 12px;font-size:12px}
-.btn-block{width:100%;padding:12px 16px;font-size:15px}
-.btn-xs{padding:4px 10px;font-size:11px;border-radius:8px}
+.btn-outline:active{background:var(--primary-light);transform:scale(.97)}
+.btn-sm{padding:7px 14px;font-size:13px;border-radius:10px}
+.btn-block{width:100%;padding:13px 16px;font-size:15px}
+.btn-xs{padding:5px 12px;font-size:12px;border-radius:10px}
 .btn-icon{background:none;border:none;cursor:pointer;font-size:18px;padding:4px 6px;
   color:var(--text3);transition:color .15s;font-family:inherit;line-height:1}
 .btn-icon:hover{color:var(--text)}
@@ -113,39 +127,52 @@ body{
 .btn-circle{
   width:36px;height:36px;border-radius:50%;background:var(--primary);color:#fff;
   border:none;font-size:22px;cursor:pointer;display:flex;align-items:center;
-  justify-content:center;box-shadow:0 2px 8px rgba(200,101,26,.3);transition:all .15s;
+  justify-content:center;box-shadow:0 2px 8px rgba(45,106,79,.3);transition:all .15s;
 }
 .btn-circle:active{transform:scale(.93)}
+
 /* ===== Home Panel ===== */
-.home-hero{text-align:center;padding:32px 0 24px}
-.home-hero .hero-emoji{font-size:52px;line-height:1;margin-bottom:12px;display:block}
-.home-hero h1{font-size:28px;font-weight:800;color:var(--text);margin-bottom:6px}
+.home-hero{text-align:center;padding:36px 0 28px}
+.home-hero .hero-emoji{font-size:56px;line-height:1;margin-bottom:16px;display:block}
+.home-hero h1{font-size:30px;font-weight:800;color:var(--text);margin-bottom:8px}
 .home-hero p{font-size:15px;color:var(--text2)}
 .home-plan-card{
-  background:var(--card);border-radius:var(--radius-lg);padding:18px;
-  margin-bottom:12px;box-shadow:var(--shadow);cursor:pointer;
-  border:2px solid transparent;transition:border-color .2s;position:relative;
+  background:var(--card);border-radius:var(--radius-lg);padding:0;overflow:hidden;
+  margin-bottom:14px;box-shadow:var(--shadow);cursor:pointer;
+  display:flex;min-height:120px;transition:all .2s;
+  border:1.5px solid transparent;position:relative;
 }
-.home-plan-card:active{border-color:var(--primary)}
-.home-plan-card .plan-name{font-size:18px;font-weight:700;color:var(--text);margin-bottom:4px}
-.home-plan-card .plan-meta{font-size:13px;color:var(--text2);display:flex;gap:12px}
-.home-plan-card .plan-stats{display:flex;gap:16px;margin-top:10px;font-size:13px;color:var(--text2)}
-.home-plan-card-actions{position:absolute;top:12px;right:12px;display:flex;gap:6px;z-index:2}
-.home-plan-card-btn{width:30px;height:30px;border-radius:8px;border:none;background:rgba(0,0,0,.06);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:background .15s;-webkit-tap-highlight-color:transparent;line-height:1;padding:0}
+.home-plan-card:active{border-color:var(--primary);transform:scale(.99)}
+.home-plan-card .plan-content{
+  flex:1;padding:18px 18px 18px 90px;display:flex;flex-direction:column;justify-content:center;
+  background:linear-gradient(90deg, var(--primary-light) 0%, rgba(216,243,220,0.2) 80px, var(--card) 80px);
+}
+.home-plan-card .plan-content::before{
+  content:'🏕️';position:absolute;left:0;top:0;height:100%;width:90px;
+  display:flex;align-items:center;justify-content:center;font-size:36px;
+  background:linear-gradient(160deg,#2D6A4F 0%,#40916C 40%,#52B788 100%);
+  color:#fff;
+}
+.home-plan-card .plan-name{font-size:17px;font-weight:700;color:var(--text);margin-bottom:6px}
+.home-plan-card .plan-meta{font-size:13px;color:var(--text2);display:flex;gap:12px;flex-wrap:wrap}
+.home-plan-card .plan-stats{display:flex;gap:16px;margin-top:8px;font-size:13px;color:var(--text2)}
+.home-plan-card-actions{position:absolute;top:12px;right:12px;display:flex;gap:6px;z-index:10}
+.home-plan-card-btn{width:32px;height:32px;border-radius:10px;border:none;background:rgba(0,0,0,.06);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:all .15s;-webkit-tap-highlight-color:transparent;line-height:1;padding:0}
 .home-plan-card-btn:hover{background:rgba(0,0,0,.12)}
-.home-plan-card-btn.delete-btn:hover{background:rgba(229,57,53,.15)}
-.home-plan-card-btn.export-btn:hover{background:rgba(76,175,80,.15)}
-.home-cta{text-align:center;padding:8px 0 32px}
-.home-cta .hint{font-size:13px;color:var(--text3);margin-bottom:10px}
+.home-plan-card-btn.delete-btn:hover{background:rgba(231,111,81,.15)}
+.home-plan-card-btn.export-btn:hover{background:rgba(45,106,79,.12)}
+.home-cta{text-align:center;padding:8px 0 40px}
+.home-cta .hint{font-size:13px;color:var(--text3);margin-bottom:12px}
 .home-empty{text-align:center;padding:40px 16px}
 .home-empty .empty-icon{font-size:48px;margin-bottom:12px;display:block}
 .home-empty .empty-text{font-size:15px;color:var(--text2);margin-bottom:16px}
+
 /* ===== Plan Switcher ===== */
 .ov-plan-header{display:flex;align-items:center;gap:8px;margin-bottom:14px}
 .plan-switcher{position:relative;flex:1;min-width:0}
 .plan-switcher-trigger{
-  display:flex;align-items:center;gap:6px;cursor:pointer;
-  padding:8px 12px;border-radius:10px;background:var(--primary-light);
+  display:flex;align-items:center;gap:8px;cursor:pointer;
+  padding:10px 14px;border-radius:14px;background:var(--primary-light);
   font-size:16px;font-weight:700;color:var(--primary);user-select:none;
   -webkit-tap-highlight-color:transparent;width:100%;
 }
@@ -153,18 +180,19 @@ body{
 .plan-switcher-trigger .dropdown-arrow{font-size:10px;transition:transform .2s;flex-shrink:0}
 .plan-switcher-trigger .dropdown-arrow.open{transform:rotate(180deg)}
 .plan-dropdown{
-  display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;
+  display:none;position:absolute;top:calc(100% + 6px);left:0;right:0;
   background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow-lg);
   z-index:50;overflow:hidden;max-height:280px;overflow-y:auto;
+  border:1px solid var(--border);
 }
 .plan-dropdown.show{display:block}
 .plan-dropdown-item{
   display:flex;align-items:center;justify-content:space-between;
-  padding:12px 16px;cursor:pointer;font-size:14px;font-weight:500;
+  padding:13px 16px;cursor:pointer;font-size:14px;font-weight:500;
   border-bottom:1px solid var(--border);transition:background .1s;
 }
 .plan-dropdown-item:active{background:var(--primary-light)}
-.plan-dropdown-item.active{color:var(--primary);font-weight:700}
+.plan-dropdown-item.active{color:var(--primary);font-weight:700;background:var(--primary-light)}
 .plan-dropdown-item .plan-item-check{color:var(--primary);font-size:14px;margin-right:4px}
 .plan-dropdown-item .plan-item-delete{
   color:var(--red);font-size:18px;padding:2px 6px;cursor:pointer;
@@ -172,171 +200,179 @@ body{
 }
 .plan-dropdown-item .plan-item-delete:active{background:var(--red-bg)}
 .plan-dropdown-add{
-  padding:12px 16px;text-align:center;color:var(--primary);font-weight:600;
+  padding:13px 16px;text-align:center;color:var(--primary);font-weight:600;
   cursor:pointer;font-size:14px;border-top:1px solid var(--border);
 }
 .plan-dropdown-add:active{background:var(--primary-light)}
 .plan-dropdown-backdrop{display:none;position:fixed;top:0;left:0;right:0;bottom:0;z-index:49}
 .plan-dropdown-backdrop.show{display:block}
+
 /* ===== Overview Panel ===== */
 .ov-info-row{display:flex;gap:16px;margin-bottom:5px}
 .ov-info-item{flex:1}
 .ov-info-item .label{font-size:11px;color:var(--text3);margin-bottom:2px}
 .ov-info-item .value{font-size:14px;font-weight:600;color:var(--text)}
 .ov-family-card{
-  display:flex;align-items:center;gap:12px;padding:14px;background:var(--card);
+  display:flex;align-items:center;gap:12px;padding:16px;background:var(--card);
   border-radius:var(--radius);margin-bottom:8px;box-shadow:var(--shadow);
+  border:1px solid rgba(45,106,79,.04);
 }
 .ov-family-card .fam-emoji{font-size:28px}
 .ov-family-card .fam-name{font-size:15px;font-weight:700;color:var(--text)}
 .ov-family-card .fam-count{font-size:12px;color:var(--text3);margin-left:auto}
 .ov-member-tag{
-  display:inline-flex;align-items:center;gap:4px;padding:5px 12px;
+  display:inline-flex;align-items:center;gap:4px;padding:6px 14px;
   background:var(--primary-light);border-radius:20px;font-size:13px;
   color:var(--primary);margin:3px 4px 3px 0;font-weight:500;
 }
 .ov-stats-bar{
-  display:flex;border-radius:var(--radius);overflow:hidden;margin-top:12px;
+  display:flex;border-radius:var(--radius);overflow:hidden;margin-top:14px;
+  box-shadow:var(--shadow);
 }
 .ov-stat-item{
-  flex:1;text-align:center;padding:14px 8px;background:var(--card);
+  flex:1;text-align:center;padding:16px 8px;background:var(--card);
   border-right:1px solid var(--border);
 }
 .ov-stat-item:last-child{border-right:none}
 .ov-stat-item .stat-num{font-size:22px;font-weight:800;color:var(--primary)}
 .ov-stat-item .stat-label{font-size:11px;color:var(--text3);margin-top:2px}
 .ov-map-container{position:relative;border-radius:var(--radius);overflow:hidden;margin-bottom:10px}
-.ov-map { width: 100%; height: 200px; border-radius: 8px; }
+.ov-map{width:100%;height:200px;border-radius:var(--radius)}
 .ov-map-inputs{margin-top:12px}
 .ov-map-input-row{display:flex;gap:8px;align-items:center;margin-bottom:8px}
 .ov-map-input-row label{font-size:12px;color:var(--text2);white-space:nowrap;min-width:42px}
 .ov-map-input-row input{
-  flex:1;padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;
-  font-size:13px;font-family:inherit;background:var(--card);color:var(--text);
-  min-width:0;
+  flex:1;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;
+  font-size:13px;font-family:inherit;background:var(--card);color:var(--text);min-width:0;
 }
 .ov-map-input-row input:focus{outline:none;border-color:var(--primary)}
+
 /* ===== Weather Card ===== */
 .weather-card{
-  background:linear-gradient(135deg,#E8F4FD 0%,#F0F7FF 100%);
-  border-radius:var(--radius-lg);padding:18px;margin-bottom:12px;
+  background:linear-gradient(135deg,#D8F3DC 0%,#E8F5E9 100%);
+  border-radius:var(--radius-lg);padding:20px;margin-bottom:14px;
   box-shadow:var(--shadow);
 }
 .weather-header{
-  display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;
+  display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;
 }
 .weather-title{font-size:15px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:6px}
 .weather-refresh{
-  font-size:12px;color:var(--primary);cursor:pointer;padding:4px 8px;
-  border-radius:6px;transition:background .15s;user-select:none;
+  font-size:12px;color:var(--primary);cursor:pointer;padding:5px 10px;
+  border-radius:8px;transition:background .15s;user-select:none;
   -webkit-tap-highlight-color:transparent;
 }
-.weather-refresh:active{background:rgba(200,101,26,.1)}
-.weather-current{display:flex;align-items:center;gap:14px;margin-bottom:16px}
-.weather-temp-main{font-size:42px;font-weight:800;color:var(--text);line-height:1}
+.weather-refresh:active{background:rgba(45,106,79,.1)}
+.weather-current{display:flex;align-items:center;gap:16px;margin-bottom:16px}
+.weather-temp-main{font-size:44px;font-weight:800;color:var(--text);line-height:1}
 .weather-curr-info{flex:1}
 .weather-desc{font-size:15px;font-weight:600;color:var(--text);margin-bottom:4px}
-.weather-details{font-size:12px;color:var(--text2);display:flex;gap:12px}
-.weather-forecast{display:flex;gap:8px;border-top:1px solid rgba(0,0,0,.06);padding-top:14px}
+.weather-details{font-size:12px;color:var(--text2);display:flex;gap:14px}
+.weather-forecast{display:flex;gap:8px;border-top:1px solid rgba(45,106,79,.1);padding-top:16px}
 .weather-day{
-  flex:1;text-align:center;padding:8px 4px;background:rgba(255,255,255,.5);
-  border-radius:10px;
+  flex:1;text-align:center;padding:10px 4px;background:rgba(255,255,255,.6);
+  border-radius:12px;
 }
 .weather-day .day-name{font-size:11px;color:var(--text3);margin-bottom:6px}
 .weather-day .day-icon{font-size:22px;line-height:1;margin-bottom:6px}
-.weather-day .day-temps{font-size:11px;color:var(--text);font-weight:600}
+.weather-day .day-temps{font-size:12px;color:var(--text);font-weight:600}
 .weather-day .day-temps .low{color:var(--text3);font-weight:400}
 .weather-error{text-align:center;padding:20px;color:var(--text3);font-size:13px}
 .weather-error .retry-link{color:var(--primary);cursor:pointer;text-decoration:underline}
+
 /* ===== Skeleton Loading ===== */
 @keyframes shimmer{0%{background-position:-200px 0}100%{background-position:calc(200px + 100%) 0}}
 .skeleton-line{
-  height:14px;background:linear-gradient(90deg,#e0e8f0 25%,#eef3f8 50%,#e0e8f0 75%);
+  height:14px;background:linear-gradient(90deg,#d8e8d8 25%,#e8f0e8 50%,#d8e8d8 75%);
   background-size:200px 100%;animation:shimmer 1.5s infinite;border-radius:4px;margin-bottom:10px;width:60%;
 }
 .skeleton-line-lg{height:24px;width:40%}
 .skeleton-row{display:flex;gap:8px;margin-top:12px}
-.skeleton-day{flex:1;height:56px;background:linear-gradient(90deg,#e0e8f0 25%,#eef3f8 50%,#e0e8f0 75%);background-size:200px 100%;animation:shimmer 1.5s infinite;border-radius:10px}
+.skeleton-day{flex:1;height:56px;background:linear-gradient(90deg,#d8e8d8 25%,#e8f0e8 50%,#d8e8d8 75%);background-size:200px 100%;animation:shimmer 1.5s infinite;border-radius:12px}
+
 /* ===== Supplies Panel ===== */
-.sup-subtabs{display:flex;gap:6px;margin-bottom:14px}
+.sup-subtabs{display:flex;gap:6px;margin-bottom:16px}
 .sup-subtab{
   flex:1;padding:10px 6px;text-align:center;background:var(--card);
-  border-radius:var(--radius);cursor:pointer;font-size:13px;font-weight:600;
+  border-radius:12px;cursor:pointer;font-size:13px;font-weight:600;
   border:1.5px solid var(--border);transition:all .15s;user-select:none;color:var(--text2);
 }
 .sup-subtab.active{background:var(--primary-light);border-color:var(--primary);color:var(--primary)}
-.sup-filter-row{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.sup-filter-row{display:flex;align-items:center;gap:10px;margin-bottom:16px}
 .sup-filter-row select{
-  flex:1;padding:9px 12px;border:1.5px solid var(--border);border-radius:var(--radius);
+  flex:1;padding:10px 12px;border:1.5px solid var(--border);border-radius:12px;
   font-size:13px;font-family:inherit;background:var(--card);color:var(--text);
 }
 .sup-progress-pill{
-  display:inline-flex;align-items:center;padding:7px 14px;
-  background:var(--primary-light);border-radius:16px;
+  display:inline-flex;align-items:center;padding:8px 16px;
+  background:var(--primary-light);border-radius:20px;
   font-size:13px;color:var(--primary);font-weight:600;white-space:nowrap;
-  border:1px solid rgba(200,101,26,.15);
+  border:1px solid rgba(45,106,79,.1);
 }
 .sup-divider{
-  height:1px;background:rgba(200,101,26,.15);margin:6px 0 10px;
+  height:1px;background:rgba(45,106,79,.08);margin:8px 0 12px;
 }
 .sup-cat-header{
-  font-size:12px;color:var(--text3);font-weight:600;padding:4px 2px 2px;
+  font-size:12px;color:var(--text3);font-weight:600;padding:6px 4px 4px;
   text-transform:uppercase;letter-spacing:.5px;
 }
 .sup-item{
-  display:flex;align-items:center;gap:8px;padding:10px 12px;
-  background:var(--card);border-radius:var(--radius);margin-bottom:4px;
-  box-shadow:0 1px 3px rgba(0,0,0,.03);transition:opacity .2s;
+  display:flex;align-items:center;gap:10px;padding:12px 14px;
+  background:var(--card);border-radius:12px;margin-bottom:6px;
+  box-shadow:0 1px 4px rgba(0,0,0,.03);transition:all .2s;
 }
-.sup-item.done{opacity:.55}
-.sup-item input[type=checkbox]{width:18px;height:18px;accent-color:var(--primary);flex-shrink:0}
+.sup-item.done{opacity:.5}
+.sup-item input[type=checkbox]{width:20px;height:20px;accent-color:var(--primary);flex-shrink:0}
 .sup-item .item-info{flex:1;min-width:0;display:flex;align-items:center;gap:8px}
-.sup-item .item-name{font-size:14px;font-weight:500;color:var(--text)}
+.sup-item .item-name{font-size:15px;font-weight:500;color:var(--text)}
 .sup-item .item-name.done-name{text-decoration:line-through;color:var(--text3)}
 .sup-item .item-qty{font-size:12px;color:var(--text3);white-space:nowrap}
 .sup-item .item-tag{
-  display:inline-block;padding:2px 10px;background:var(--primary-light);
-  border-radius:10px;font-size:11px;color:var(--primary);font-weight:500;flex-shrink:0;
+  display:inline-block;padding:3px 12px;background:var(--primary-light);
+  border-radius:12px;font-size:11px;color:var(--primary);font-weight:500;flex-shrink:0;
 }
 .sup-item .item-status{
-  display:inline-block;padding:2px 8px;background:#e6f7e6;
-  border-radius:10px;font-size:11px;color:#2d8a2d;font-weight:500;flex-shrink:0;
+  display:inline-block;padding:3px 10px;background:#D8F3DC;
+  border-radius:12px;font-size:11px;color:#2D6A4F;font-weight:500;flex-shrink:0;
 }
 .sup-item .item-actions{display:flex;gap:2px;flex-shrink:0}
-/* FAB (Floating Action Button) */
+
+/* FAB */
 .sup-fab{
-  position:fixed;bottom:80px;right:20px;width:50px;height:50px;
-  border-radius:50%;background:var(--primary);color:#fff;border:none;
-  font-size:28px;cursor:pointer;box-shadow:0 4px 16px rgba(200,101,26,.35);
+  position:fixed;bottom:90px;right:20px;width:52px;height:52px;
+  border-radius:50%;background:var(--accent);color:#fff;border:none;
+  font-size:28px;cursor:pointer;box-shadow:0 4px 20px rgba(231,111,81,.35);
   z-index:150;display:flex;align-items:center;justify-content:center;
   transition:transform .15s,box-shadow .15s;line-height:1;
 }
-.sup-fab:active{transform:scale(.92);box-shadow:0 2px 8px rgba(200,101,26,.25)}
+.sup-fab:active{transform:scale(.92);box-shadow:0 2px 12px rgba(231,111,81,.25)}
+
 /* Add Modal */
 .sup-modal-overlay{
   display:none;position:fixed;top:0;left:0;right:0;bottom:0;
-  background:rgba(0,0,0,.4);z-index:200;align-items:center;justify-content:center;
+  background:rgba(0,0,0,.35);z-index:200;align-items:center;justify-content:center;
 }
 .sup-modal-overlay.show{display:flex}
 .sup-modal{
-  background:var(--card);border-radius:var(--radius-lg);padding:20px;
-  width:calc(100% - 48px);max-width:380px;box-shadow:0 8px 32px rgba(0,0,0,.15);
+  background:var(--card);border-radius:var(--radius-lg);padding:24px;
+  width:calc(100% - 48px);max-width:380px;box-shadow:0 12px 40px rgba(0,0,0,.12);
 }
-.sup-modal h3{font-size:16px;margin:0 0 16px;color:var(--text)}
-.sup-modal .field{margin-bottom:12px}
-.sup-modal .field label{display:block;font-size:12px;color:var(--text3);margin-bottom:4px;font-weight:600}
+.sup-modal h3{font-size:17px;margin:0 0 18px;color:var(--text);font-weight:700}
+.sup-modal .field{margin-bottom:14px}
+.sup-modal .field label{display:block;font-size:12px;color:var(--text3);margin-bottom:6px;font-weight:600}
 .sup-modal .field input,.sup-modal .field select{
-  width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:var(--radius);
+  width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:10px;
   font-size:14px;font-family:inherit;background:var(--bg);color:var(--text);box-sizing:border-box;
 }
 .sup-modal .field input:focus,.sup-modal .field select:focus{outline:none;border-color:var(--primary)}
-.sup-modal .modal-actions{display:flex;gap:8px;margin-top:16px}
-.sup-modal .modal-actions button{flex:1;padding:10px;border-radius:var(--radius);font-size:14px;font-weight:600;cursor:pointer}
+.sup-modal .modal-actions{display:flex;gap:10px;margin-top:18px}
+.sup-modal .modal-actions button{flex:1;padding:11px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit}
 .sup-modal .modal-actions .btn-cancel{background:var(--card);border:1.5px solid var(--border);color:var(--text2)}
 .sup-modal .modal-actions .btn-confirm{background:var(--primary);border:none;color:#fff}
+
 /* ===== Expenses Panel ===== */
 .exp-summary{
-  display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;
+  display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;
 }
 .exp-sum-card{
   background:var(--card);border-radius:var(--radius);padding:14px;
@@ -346,21 +382,22 @@ body{
 .exp-sum-card .sum-label{font-size:11px;color:var(--text3);margin-top:2px}
 .exp-sum-card.full{grid-column:1/-1}
 .exp-item{
-  display:flex;align-items:center;gap:10px;padding:13px 14px;
+  display:flex;align-items:center;gap:10px;padding:14px 16px;
   background:var(--card);border-radius:var(--radius);margin-bottom:8px;
-  box-shadow:0 1px 3px rgba(0,0,0,.03);
+  box-shadow:0 1px 4px rgba(0,0,0,.03);
 }
 .exp-item .exp-purpose{flex:1;font-size:14px;font-weight:500}
 .exp-item .exp-amount{font-size:16px;font-weight:700;color:var(--primary);white-space:nowrap}
 .exp-item .exp-payer{font-size:12px;color:var(--text2);white-space:nowrap}
 .exp-item .exp-aa{
-  display:inline-flex;align-items:center;gap:3px;padding:3px 8px;
-  border-radius:10px;font-size:11px;font-weight:600;cursor:pointer;user-select:none;
+  display:inline-flex;align-items:center;gap:3px;padding:4px 10px;
+  border-radius:12px;font-size:11px;font-weight:600;cursor:pointer;user-select:none;
 }
 .exp-item .exp-aa.in{background:var(--green-bg);color:var(--green)}
 .exp-item .exp-aa.out{background:var(--red-bg);color:var(--red)}
+
 /* ===== AA Panel ===== */
-.aa-summary{display:flex;gap:10px;margin-bottom:14px}
+.aa-summary{display:flex;gap:10px;margin-bottom:16px}
 .aa-sum-card{
   flex:1;background:var(--card);border-radius:var(--radius);padding:14px;
   box-shadow:var(--shadow);text-align:center;
@@ -368,11 +405,11 @@ body{
 .aa-sum-card .aa-num{font-size:20px;font-weight:800;color:var(--primary)}
 .aa-sum-card .aa-label{font-size:11px;color:var(--text3);margin-top:2px}
 .aa-party-card{
-  background:var(--card);border-radius:var(--radius-lg);padding:16px;margin-bottom:10px;
-  box-shadow:var(--shadow);
+  background:var(--card);border-radius:var(--radius-lg);padding:18px;margin-bottom:12px;
+  box-shadow:var(--shadow);border:1px solid rgba(45,106,79,.04);
 }
 .aa-party-card .party-header{
-  display:flex;align-items:center;gap:8px;margin-bottom:10px;
+  display:flex;align-items:center;gap:8px;margin-bottom:12px;
 }
 .aa-party-card .party-name{font-size:16px;font-weight:700;color:var(--text)}
 .aa-party-card .party-members{font-size:12px;color:var(--text3)}
@@ -380,18 +417,18 @@ body{
 .aa-party-row .label{color:var(--text2)}
 .aa-party-row .val{font-weight:600}
 .aa-party-status{
-  margin-top:8px;padding:8px 12px;border-radius:var(--radius);font-size:13px;font-weight:600;
+  margin-top:10px;padding:10px 14px;border-radius:var(--radius);font-size:13px;font-weight:600;
 }
 .aa-party-status.receive{background:var(--green-bg);color:var(--green)}
 .aa-party-status.pay{background:var(--red-bg);color:var(--red)}
-.aa-party-status.zero{background:#f5f5f5;color:var(--text3)}
+.aa-party-status.zero{background:#F0F4F0;color:var(--text3)}
 .aa-transfer{
-  background:var(--card);border-radius:var(--radius-lg);padding:16px;
-  margin-top:12px;box-shadow:var(--shadow);
+  background:var(--card);border-radius:var(--radius-lg);padding:18px;
+  margin-top:14px;box-shadow:var(--shadow);
 }
-.aa-transfer h4{font-size:14px;font-weight:700;margin-bottom:10px;color:var(--text)}
+.aa-transfer h4{font-size:14px;font-weight:700;margin-bottom:12px;color:var(--text)}
 .aa-transfer-item{
-  display:flex;align-items:center;gap:8px;padding:10px 0;
+  display:flex;align-items:center;gap:8px;padding:12px 0;
   border-bottom:1px solid var(--border);font-size:14px;
 }
 .aa-transfer-item:last-child{border-bottom:none}
@@ -399,93 +436,102 @@ body{
 .aa-transfer-item .to{font-weight:600;color:var(--green)}
 .aa-transfer-item .arrow-tf{color:var(--text3)}
 .aa-transfer-item .amount-tf{font-weight:700;color:var(--primary);margin-left:auto}
+
 /* ===== Share Panel ===== */
-.share-actions{display:flex;gap:8px;margin-bottom:14px}
+.share-actions{display:flex;gap:8px;margin-bottom:16px}
 .share-preview{
-  background:#EDEDED;border-radius:var(--radius-lg);padding:16px;
-  font-size:13px;line-height:1.9;max-height:60vh;overflow-y:auto;
+  background:#F0F4F0;border-radius:var(--radius-lg);padding:18px;
+  font-size:14px;line-height:1.9;max-height:60vh;overflow-y:auto;
   font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+  border:1px solid var(--border);
 }
-.share-preview .msg-title{font-size:16px;font-weight:700;text-align:center;margin-bottom:8px}
-.share-preview .msg-section{margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #ddd}
+.share-preview .msg-title{font-size:17px;font-weight:700;text-align:center;margin-bottom:10px;color:var(--text)}
+.share-preview .msg-section{margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border)}
 .share-preview .msg-section:last-child{border-bottom:none}
-.share-preview .msg-h3{font-weight:700;color:#576b95;margin-bottom:4px;font-size:14px}
+.share-preview .msg-h3{font-weight:700;color:var(--primary);margin-bottom:4px;font-size:14px}
 .share-tips{
-  margin-top:12px;padding:12px 14px;background:var(--primary-light);
-  border-radius:var(--radius);font-size:13px;color:var(--text2);
+  margin-top:14px;padding:14px 16px;background:var(--accent-light);
+  border-radius:var(--radius);font-size:13px;color:var(--text);line-height:1.7;
 }
 .share-watermark{
-  text-align:center;font-size:12px;color:var(--text3);margin-top:14px;
+  text-align:center;font-size:12px;color:var(--text3);margin-top:16px;
 }
+
 /* ===== Modal ===== */
 .modal-overlay{
   display:none;position:fixed;top:0;left:0;right:0;bottom:0;
-  background:rgba(0,0,0,.4);z-index:200;align-items:flex-end;justify-content:center;
+  background:rgba(0,0,0,.35);z-index:200;align-items:flex-end;justify-content:center;
 }
 .modal-overlay.active{display:flex}
 .modal-sheet{
   background:var(--card);border-radius:var(--radius-lg) var(--radius-lg) 0 0;
-  width:100%;max-width:540px;max-height:80vh;overflow-y:auto;padding:20px 18px;
-  padding-bottom:calc(20px + env(safe-area-inset-bottom, 0));
+  width:100%;max-width:540px;max-height:85vh;overflow-y:auto;padding:24px 20px;
+  padding-bottom:calc(24px + env(safe-area-inset-bottom,0));
 }
-.modal-sheet h3{font-size:18px;font-weight:700;margin-bottom:16px;color:var(--text)}
-.modal-field{margin-bottom:14px}
+.modal-sheet h3{font-size:18px;font-weight:700;margin-bottom:18px;color:var(--text)}
+.modal-field{margin-bottom:16px}
 .modal-field label{display:block;font-size:13px;font-weight:600;color:var(--text2);margin-bottom:6px}
 .modal-field input,.modal-field select,.modal-field textarea{
-  width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:var(--radius);
-  font-size:14px;font-family:inherit;background:var(--card);color:var(--text);
+  width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;
+  font-size:14px;font-family:inherit;background:#F8FAF8;color:var(--text);
 }
 .modal-field input:focus,.modal-field select:focus,.modal-field textarea:focus{outline:none;border-color:var(--primary)}
 .modal-field textarea{resize:vertical;min-height:80px}
-.modal-actions{display:flex;gap:10px;margin-top:18px}
+.modal-actions{display:flex;gap:10px;margin-top:20px}
 .modal-actions .btn{flex:1}
+
 /* ===== Toast ===== */
 .toast{
   position:fixed;top:24px;left:50%;transform:translateX(-50%);
-  background:var(--text);color:#fff;padding:10px 24px;
-  border-radius:20px;font-size:14px;font-weight:600;z-index:300;
-  box-shadow:0 4px 20px rgba(0,0,0,.15);animation:toastIn .3s ease;
+  background:var(--text);color:#fff;padding:12px 24px;
+  border-radius:24px;font-size:14px;font-weight:600;z-index:300;
+  box-shadow:0 8px 24px rgba(0,0,0,.15);animation:toastIn .3s ease;
   pointer-events:none;
 }
 @keyframes toastIn{from{opacity:0;transform:translateX(-50%) translateY(-10px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+
 /* ===== Scrollbar ===== */
 #content::-webkit-scrollbar{width:4px}
 #content::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+
 /* ===== Shopping List Modal ===== */
-.shop-cat-title{font-size:13px;font-weight:700;color:var(--primary);padding:10px 0 6px;border-top:1px solid var(--border);margin-top:4px}
+.shop-cat-title{font-size:13px;font-weight:700;color:var(--primary);padding:12px 0 8px;border-top:1px solid var(--border);margin-top:4px}
 .shop-cat-title:first-child{border-top:none;margin-top:0}
-.shop-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)}
+.shop-item{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--border)}
 .shop-item:last-child{border-bottom:none}
-.shop-item input[type=checkbox]{width:18px;height:18px;accent-color:var(--primary);flex-shrink:0}
+.shop-item input[type=checkbox]{width:20px;height:20px;accent-color:var(--primary);flex-shrink:0}
 .shop-item .shop-info{flex:1;min-width:0}
 .shop-item .shop-name{font-size:14px;font-weight:500;color:var(--text)}
 .shop-item .shop-name.done{text-decoration:line-through;color:var(--text3)}
 .shop-item .shop-meta{font-size:12px;color:var(--text3);margin-top:2px}
-.shop-item .shop-source{font-size:11px;color:var(--primary);background:var(--primary-light);padding:2px 8px;border-radius:8px;white-space:nowrap;flex-shrink:0}
-.shop-stats{text-align:center;padding:12px;font-size:14px;font-weight:600;color:var(--primary);border-top:1px solid var(--border);margin-top:8px}
+.shop-item .shop-source{font-size:11px;color:var(--primary);background:var(--primary-light);padding:3px 10px;border-radius:10px;white-space:nowrap;flex-shrink:0}
+.shop-stats{text-align:center;padding:14px;font-size:14px;font-weight:600;color:var(--primary);border-top:1px solid var(--border);margin-top:10px}
+
 /* ===== Task Card ===== */
 .task-card .task-add-row{display:flex;gap:6px;margin-bottom:10px}
-.task-card .task-add-row input{flex:1;padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;background:var(--card);color:var(--text);min-width:0}
+.task-card .task-add-row input{flex:1;padding:9px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:13px;font-family:inherit;background:var(--card);color:var(--text);min-width:0}
 .task-card .task-add-row input:focus{outline:none;border-color:var(--primary)}
-.task-card .task-add-row select{padding:8px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;background:var(--card);color:var(--text)}
-.task-item{display:flex;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid var(--border)}
+.task-card .task-add-row select{padding:9px;border:1.5px solid var(--border);border-radius:10px;font-size:13px;font-family:inherit;background:var(--card);color:var(--text)}
+.task-item{display:flex;align-items:center;gap:8px;padding:12px 0;border-bottom:1px solid var(--border)}
 .task-item:last-child{border-bottom:none}
-.task-item input[type=checkbox]{width:17px;height:17px;accent-color:var(--primary);flex-shrink:0}
+.task-item input[type=checkbox]{width:18px;height:18px;accent-color:var(--primary);flex-shrink:0}
 .task-item .task-text{flex:1;font-size:14px;font-weight:500;color:var(--text)}
 .task-item .task-text.done{text-decoration:line-through;color:var(--text3)}
 .task-pill{display:inline-block;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:600;color:#fff;flex-shrink:0}
+
 /* ===== Budget ===== */
-.budget-section{margin-bottom:14px}
+.budget-section{margin-bottom:16px}
 .budget-input-row{display:flex;align-items:center;gap:8px;margin-bottom:10px}
-.budget-input-row input{flex:1;padding:9px 12px;border:1.5px solid var(--border);border-radius:var(--radius);font-size:14px;font-family:inherit;background:var(--card);color:var(--text)}
+.budget-input-row input{flex:1;padding:10px 14px;border:1.5px solid var(--border);border-radius:12px;font-size:14px;font-family:inherit;background:var(--card);color:var(--text)}
 .budget-input-row input:focus{outline:none;border-color:var(--primary)}
-.budget-bar-wrap{background:#eee;border-radius:8px;height:10px;overflow:hidden;margin-top:6px}
-.budget-bar{height:100%;border-radius:8px;transition:width .3s}
+.budget-bar-wrap{background:#E0E8E0;border-radius:10px;height:10px;overflow:hidden;margin-top:6px}
+.budget-bar{height:100%;border-radius:10px;transition:width .3s}
 .budget-bar.green{background:var(--green)}
-.budget-bar.yellow{background:#F0A500}
+.budget-bar.yellow{background:#E76F51}
 .budget-bar.red{background:var(--red)}
 .budget-stats{display:flex;justify-content:space-between;font-size:12px;color:var(--text2);margin-top:4px}
 .budget-over{color:var(--red);font-weight:600}
+
 </style>
 <script defer src="lib/supabase.min.js" onerror="window.__supabaseFailed=true"></script>
 <script src="supabase-config.js"></script>
@@ -549,23 +595,51 @@ var _supabaseReady = false;
 
 /* ----- Auth ----- */
 async function signInWithGitHub() {
-  if (!supabase) return;
-  var res = await supabase.auth.signInWithOAuth({ provider: 'github' });
-  if (res.error) console.error('登录失败:', res.error);
+  if (!supabase) {
+    T('Supabase 未就绪，无法登录');
+    return;
+  }
+  try {
+    var res = await supabase.auth.signInWithOAuth({ provider: 'github' });
+    if (res.error) {
+      console.error('登录失败:', res.error);
+      T('登录失败：' + (res.error.message || res.error));
+    }
+  } catch (e) {
+    console.error('登录请求异常:', e);
+    T('登录请求失败，请检查网络后重试');
+  }
 }
 
 async function signOut() {
-  if (!supabase) return;
-  await supabase.auth.signOut();
-  _supabaseReady = false;
-  localStorage.removeItem('supabase_migrated');
-  location.reload();
+  if (!supabase) {
+    T('Supabase 未就绪，无法退出');
+    return;
+  }
+  try {
+    await supabase.auth.signOut();
+    _supabaseReady = false;
+    localStorage.removeItem('supabase_migrated');
+    location.reload();
+  } catch (e) {
+    console.error('注销失败:', e);
+    T('注销失败，请稍后重试');
+  }
 }
 
 async function getCurrentUser() {
   if (!supabase) return null;
-  var res = await supabase.auth.getUser();
-  return res.data ? res.data.user : null;
+  try {
+    var res = await supabase.auth.getUser();
+    if (res.error) {
+      console.error('获取当前用户失败:', res.error);
+      return null;
+    }
+    return res.data ? res.data.user : null;
+  } catch (e) {
+    console.error('获取当前用户异常:', e);
+    return null;
+  }
 }
 
 /* ----- Auth UI ----- */
@@ -574,7 +648,13 @@ function renderAuthUI() {
   supabase.auth.getSession().then(function(res) {
     var area = document.getElementById('authArea');
     if (!area) return;
-    if (res.data.session) {
+    if (res.error) {
+      console.error('获取会话失败:', res.error);
+      T('无法获取登录状态，请刷新页面');
+      area.innerHTML = '<button class="btn btn-xs btn-primary" style="padding:4px 10px;font-size:12px;white-space:nowrap" onclick="signInWithGitHub()">GitHub 登录</button>';
+      return;
+    }
+    if (res.data && res.data.session) {
       var u = res.data.session.user;
       var m = u.user_metadata || {};
       var name = m.full_name || m.user_name || u.email || '用户';
@@ -587,13 +667,16 @@ function renderAuthUI() {
     } else {
       area.innerHTML = '<button class="btn btn-xs btn-primary" style="padding:4px 10px;font-size:12px;white-space:nowrap" onclick="signInWithGitHub()">GitHub 登录</button>';
     }
+  }).catch(function(e) {
+    console.error('Auth UI load failed:', e);
+    T('无法获取登录状态，请刷新页面');
   });
 }
 
 /* ----- Auth State Listener ----- */
 if (supabase) {
 supabase.auth.onAuthStateChange(function(event, session) {
-  if (event === 'SIGNED_IN') {
+  if (event === 'SIGNED_IN' && session && session.user && session.user.id) {
     _supabaseReady = true;
     migrateLocalDataToSupabase(session.user.id).then(function() {
       return loadPlansFromSupabase();
@@ -615,7 +698,7 @@ async function migrateLocalDataToSupabase(userId) {
   if (!supabase) return;
   if (localStorage.getItem('supabase_migrated')) return;
   try {
-    var lp = JSON.parse(localStorage.getItem('camping_plans') || '[]');
+    var lp = safeJsonParse(localStorage.getItem('camping_plans'), []);
     for (var i = 0; i < lp.length; i++) {
       var p = lp[i], info = p.info || {};
       var row = {
@@ -631,20 +714,31 @@ async function migrateLocalDataToSupabase(userId) {
         shopping_checked: p.shoppingChecked || {}
       };
       var r = await supabase.from('plans').insert(row).select();
-      if (r.data && r.data[0]) p._supabase_id = r.data[0].id;
+      if (r.error) {
+        console.warn('单个计划迁移失败:', r.error, row);
+      } else if (r.data && r.data[0]) {
+        p._supabase_id = r.data[0].id;
+      }
     }
     if (lp.length > 0) localStorage.setItem('camping_plans', JSON.stringify(lp));
 
-    var lt = JSON.parse(localStorage.getItem('camping_gear_templates') || '[]');
+    var lt = safeJsonParse(localStorage.getItem('camping_gear_templates'), []);
     for (var j = 0; j < lt.length; j++) {
-      await supabase.from('gear_templates').insert({
-        name: lt[j].name,
-        items: lt[j].categories || lt[j].items || []
+      var t = lt[j] || {};
+      var rt = await supabase.from('gear_templates').insert({
+        name: t.name || '模板',
+        items: t.categories || t.items || []
       });
+      if (rt.error) {
+        console.warn('单个模板迁移失败:', rt.error, t);
+      }
     }
     localStorage.setItem('supabase_migrated', 'true');
     console.log('数据迁移完成 (' + lp.length + ' plans, ' + lt.length + ' templates)');
-  } catch(e) { console.error('迁移失败:', e); }
+  } catch(e) {
+    console.error('迁移失败:', e);
+    T('本地数据迁移失败，稍后将继续尝试同步');
+  }
 }
 
 /* ----- Load from Supabase ----- */
@@ -652,39 +746,59 @@ async function loadPlansFromSupabase() {
   if (!supabase) return;
   var user = await getCurrentUser();
   if (!user) return;
-  var r = await supabase.from('plans').select('*').eq('user_id', user.id).order('created_at', { ascending: false });
-  var plans = r.data || [];
-  if (plans.length > 0) {
-    var local = plans.map(function(p) {
-      var s = p.supplies || {};
-      return {
-        _supabase_id: p.id, name: p.name,
-        info: { name: p.name, date: p.date, location: p.location },
-        families: p.families || [],
-        familyGear: s.familyGear || {},
-        publicFood: s.publicFood || [],
-        publicGear: s.publicGear || [],
-        itinerary: s.itinerary || [],
-        mapConfig: s.mapConfig || { lng: 116.67, lat: 40.58, name: '北京怀柔白河湾' },
-        expenses: p.expenses || [],
-        tasks: p.tasks || [],
-        budget: p.budget || 0,
-        shoppingChecked: p.shopping_checked || {}
-      };
-    });
-    localStorage.setItem('camping_plans', JSON.stringify(local));
-    var active = parseInt(localStorage.getItem('camping_activePlan') || '0');
-    if (isNaN(active) || active >= local.length) localStorage.setItem('camping_activePlan', '0');
+  try {
+    var r = await supabase.from('plans').select('*').eq('user_id', user.id).order('created_at', { ascending: false });
+    if (r.error) {
+      console.error('加载计划失败:', r.error);
+      T('加载 Supabase 计划失败，请检查网络或稍后重试');
+      return;
+    }
+    var plans = r.data || [];
+    if (plans.length > 0) {
+      var local = plans.map(function(p) {
+        var s = p.supplies || {};
+        return {
+          _supabase_id: p.id, name: p.name,
+          info: { name: p.name, date: p.date, location: p.location },
+          families: p.families || [],
+          familyGear: s.familyGear || {},
+          publicFood: s.publicFood || [],
+          publicGear: s.publicGear || [],
+          itinerary: s.itinerary || [],
+          mapConfig: s.mapConfig || { lng: 116.67, lat: 40.58, name: '北京怀柔白河湾' },
+          expenses: p.expenses || [],
+          tasks: p.tasks || [],
+          budget: p.budget || 0,
+          shoppingChecked: p.shopping_checked || {}
+        };
+      });
+      localStorage.setItem('camping_plans', JSON.stringify(local));
+      var active = parseInt(localStorage.getItem('camping_activePlan') || '0');
+      if (isNaN(active) || active >= local.length) localStorage.setItem('camping_activePlan', '0');
+    }
+  } catch (e) {
+    console.error('加载 Supabase 计划异常:', e);
+    T('加载 Supabase 计划异常，请检查网络或稍后重试');
   }
 }
 
 async function loadTemplatesFromSupabase() {
   if (!supabase) return;
-  var r = await supabase.from('gear_templates').select('*').order('created_at', { ascending: false });
-  var tpls = r.data || [];
-  if (tpls.length > 0) {
-    var local = tpls.map(function(t) { return { _supabase_id: t.id, name: t.name, categories: t.items || [] }; });
-    localStorage.setItem('camping_gear_templates', JSON.stringify(local));
+  try {
+    var r = await supabase.from('gear_templates').select('*').order('created_at', { ascending: false });
+    if (r.error) {
+      console.error('加载模板失败:', r.error);
+      T('加载 Supabase 模板失败，请检查网络或稍后重试');
+      return;
+    }
+    var tpls = r.data || [];
+    if (tpls.length > 0) {
+      var local = tpls.map(function(t) { return { _supabase_id: t.id, name: t.name, categories: t.items || [] }; });
+      localStorage.setItem('camping_gear_templates', JSON.stringify(local));
+    }
+  } catch (e) {
+    console.error('加载 Supabase 模板异常:', e);
+    T('加载 Supabase 模板异常，请检查网络或稍后重试');
   }
 }
 
@@ -692,35 +806,45 @@ async function loadTemplatesFromSupabase() {
 async function _syncPlansToSupabase() {
   if (!supabase) return;
   if (!_supabaseReady) return;
-  var user = await getCurrentUser();
-  if (!user) return;
-  var plans = JSON.parse(localStorage.getItem('camping_plans') || '[]');
-  var r = await supabase.from('plans').select('id').eq('user_id', user.id);
-  var existingIds = (r.data || []).map(function(p) { return p.id; });
+  try {
+    var user = await getCurrentUser();
+    if (!user) return;
+    var plans = readPlans();
+    var r = await supabase.from('plans').select('id').eq('user_id', user.id);
+    if (r.error) throw r.error;
+    var existingIds = (r.data || []).map(function(p) { return p.id; });
 
-  for (var i = 0; i < plans.length; i++) {
-    var p = plans[i], info = p.info || {};
-    var row = {
-      user_id: user.id, name: info.name || p.name || '未命名', date: info.date || '待定', location: info.location || '待定',
-      families: p.families || [],
-      supplies: { familyGear: p.familyGear || {}, publicFood: p.publicFood || [], publicGear: p.publicGear || [], itinerary: p.itinerary || [], mapConfig: p.mapConfig || {} },
-      expenses: p.expenses || [], tasks: p.tasks || [], budget: p.budget || 0, shopping_checked: p.shoppingChecked || {},
-      updated_at: new Date().toISOString()
-    };
-    if (p._supabase_id) {
-      await supabase.from('plans').update(row).eq('id', p._supabase_id);
-      var idx = existingIds.indexOf(p._supabase_id);
-      if (idx > -1) existingIds.splice(idx, 1);
-    } else {
-      var ins = await supabase.from('plans').insert(row).select();
-      if (ins.data && ins.data[0]) {
-        p._supabase_id = ins.data[0].id;
-        localStorage.setItem('camping_plans', JSON.stringify(plans));
+    for (var i = 0; i < plans.length; i++) {
+      var p = plans[i], info = p.info || {};
+      var row = {
+        user_id: user.id, name: info.name || p.name || '未命名', date: info.date || '待定', location: info.location || '待定',
+        families: p.families || [],
+        supplies: { familyGear: p.familyGear || {}, publicFood: p.publicFood || [], publicGear: p.publicGear || [], itinerary: p.itinerary || [], mapConfig: p.mapConfig || {} },
+        expenses: p.expenses || [], tasks: p.tasks || [], budget: p.budget || 0, shopping_checked: p.shoppingChecked || {},
+        updated_at: new Date().toISOString()
+      };
+      if (p._supabase_id) {
+        var upd = await supabase.from('plans').update(row).eq('id', p._supabase_id);
+        if (upd.error) throw upd.error;
+        var idx = existingIds.indexOf(p._supabase_id);
+        if (idx > -1) existingIds.splice(idx, 1);
+      } else {
+        var ins = await supabase.from('plans').insert(row).select();
+        if (ins.error) throw ins.error;
+        if (ins.data && ins.data[0]) {
+          p._supabase_id = ins.data[0].id;
+          localStorage.setItem('camping_plans', JSON.stringify(plans));
+        }
       }
     }
-  }
-  for (var j = 0; j < existingIds.length; j++) {
-    await supabase.from('plans').delete().eq('id', existingIds[j]);
+    for (var j = 0; j < existingIds.length; j++) {
+      var del = await supabase.from('plans').delete().eq('id', existingIds[j]);
+      if (del.error) throw del.error;
+    }
+  } catch (e) {
+    console.error('Supabase sync failed:', e);
+    T('Supabase 同步失败，请检查网络或稍后重试');
+    throw e;
   }
 }
 
@@ -776,8 +900,14 @@ function readPlans(){
   try{var v=localStorage.getItem('camping_plans');return v?JSON.parse(v):[]}catch(e){return[]}
 }
 function savePlans(plans){
-  try{localStorage.setItem('camping_plans',JSON.stringify(plans))}catch(e){}
-  _syncPlansToSupabase().catch(function(e){console.error('Supabase sync:',e)});
+  try {
+    localStorage.setItem('camping_plans',JSON.stringify(plans));
+  } catch (e) {
+    console.error('本地保存失败:', e);
+    T('本地保存失败，请检查浏览器存储权限');
+    return;
+  }
+  _syncPlansToSupabase().catch(function(e){});
 }
 function activePlanIdx(){
   var idx=parseInt(localStorage.getItem('camping_activePlan')||'0');if(isNaN(idx))idx=0;
@@ -810,9 +940,10 @@ function exportData(){
   var blob=new Blob([json],{type:'application/json'});
   var url=URL.createObjectURL(blob);
   var a=document.createElement('a');
-  a.href=url;a.download=(plan.name||'露营计划')+'.json';
+  a.href=url;
+  a.download=safeFileName(plan.name || '露营计划') + '.json';
   document.body.appendChild(a);a.click();
-  document.body.removeChild(a);URL.revokeObjectURreadLocal(url);
+  document.body.removeChild(a);URL.revokeObjectURL(url);
   T('已导出');
 }
 
@@ -981,7 +1112,63 @@ function T(msg){
   var t=document.getElementById('toast');t.textContent=msg;t.style.display='block';
   clearTimeout(t._t);t._t=setTimeout(function(){t.style.display='none'},2000);
 }
-function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function esc(s){
+  s = String(s || '');
+  return s.replace(/\\/g, '\\\\')
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, "\\'")
+}
+function isPlainObject(value){
+  return value && typeof value === 'object' && !Array.isArray(value);
+}
+function isNonEmptyString(value){
+  return typeof value === 'string' && value.trim().length > 0;
+}
+function normalizeImportedPlan(plan){
+  return {
+    name: String(plan.name || '我的露营'),
+    info: {
+      name: String((plan.info && plan.info.name) || plan.name || '我的露营'),
+      date: String((plan.info && plan.info.date) || '待定'),
+      location: String((plan.info && plan.info.location) || '待定')
+    },
+    families: Array.isArray(plan.families) ? plan.families : [],
+    familyGear: isPlainObject(plan.familyGear) ? plan.familyGear : {},
+    publicFood: Array.isArray(plan.publicFood) ? plan.publicFood : [],
+    publicGear: Array.isArray(plan.publicGear) ? plan.publicGear : [],
+    itinerary: Array.isArray(plan.itinerary) ? plan.itinerary : [],
+    mapConfig: isPlainObject(plan.mapConfig) ? {
+      lng: Number(plan.mapConfig.lng) || 116.67,
+      lat: Number(plan.mapConfig.lat) || 40.58,
+      name: String(plan.mapConfig.name || '北京怀柔白河湾')
+    } : { lng: 116.67, lat: 40.58, name: '北京怀柔白河湾' },
+    expenses: Array.isArray(plan.expenses) ? plan.expenses : [],
+    tasks: Array.isArray(plan.tasks) ? plan.tasks : [],
+    budget: Number(plan.budget) || 0,
+    shoppingChecked: isPlainObject(plan.shoppingChecked) ? plan.shoppingChecked : {}
+  };
+}
+function isValidImportedPlan(plan){
+  return plan && typeof plan === 'object' &&
+    isNonEmptyString(plan.name) &&
+    isPlainObject(plan.info) &&
+    Array.isArray(plan.families);
+}
+function safeJsonParse(value, fallback){
+  if (typeof value !== 'string') return fallback;
+  try {
+    var parsed = JSON.parse(value);
+    return parsed === null ? fallback : parsed;
+  } catch (e) {
+    return fallback;
+  }
+}
+function safeFileName(name){
+  return String(name || '文件').replace(/[\\/:*?"<>|\r\n]/g, '-').slice(0,80);
+}
 function deepClone(o){return JSON.parse(JSON.stringify(o))}
 
 /* ================================================================
@@ -1114,9 +1301,10 @@ function renderHome(){
       html+='<button class="home-plan-card-btn export-btn" onclick="event.stopPropagation();exportPlan('+idx+')" title="导出计划">📤</button>';
       html+='<button class="home-plan-card-btn delete-btn" onclick="event.stopPropagation();if(confirm(\'确定删除'+esc(plan.info.name)+'计划？\')){deletePlan('+idx+')}" title="删除计划">🗑️</button>';
       html+='</div>';
+      html+='<div class="plan-content">';
       html+='<div class="plan-name">🏕️ '+esc(plan.info.name)+'</div>';
       html+='<div class="plan-meta"><span>📅 '+esc(plan.info.date)+'</span><span>📍 '+esc(plan.info.location)+'</span></div>';
-      html+='<div class="plan-stats"><span>🏠 '+nFam+'个家庭</span><span>👥 '+nPpl+'人</span></div></div>';
+      html+='<div class="plan-stats"><span>🏠 '+nFam+'个家庭</span><span>👥 '+nPpl+'人</span></div></div></div>';
     });
   }
   html+='<div class="home-cta">';
@@ -1161,12 +1349,11 @@ function exportPlan(idx){
   var url=URL.createObjectURL(blob);
   var a=document.createElement('a');
   a.href=url;
-  var safeDate=plan.info.date.replace(/[\\\/:*?"<>|]/g,'-');
-  a.download='露营计划_'+plan.info.name+'_'+safeDate+'.json';
+  a.download=safeFileName('露营计划_' + plan.info.name + '_' + plan.info.date) + '.json';
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
-  URL.revokeObjectURreadLocal(url);
+  URL.revokeObjectURL(url);
   T('计划已导出');
 }
 
@@ -1185,10 +1372,11 @@ function importPlan(){
       reader.onload=function(ev){
         try{
           var plan=JSON.parse(ev.target.result);
-          if(!plan.info||!plan.name||!plan.families){
-            T('无效的计划文件，缺少必要字段');
+          if(!isValidImportedPlan(plan)){
+            T('无效的计划文件，缺少必要字段或格式错误');
             return;
           }
+          plan = normalizeImportedPlan(plan);
           var plans=readPlans();
           plans.push(plan);
           savePlans(plans);
@@ -1198,6 +1386,7 @@ function importPlan(){
           renderHome();
           if(currentTab!=='home'){switchTab(currentTab);}
         }catch(err){
+          console.error('导入计划失败:', err);
           T('文件解析失败，请检查文件格式');
         }
       };
@@ -2310,15 +2499,15 @@ function copyShareText(){
     if(oldInfo){
       // Migrate old data
       var plan={
-        name:(JSON.parse(oldInfo)||{}).name||'我的露营',
-        info:JSON.parse(localStorage.getItem('camping_info')||'null')||DEFAULT_INFO,
-        families:JSON.parse(localStorage.getItem('camping_families')||'null')||DEFAULT_FAMILIES,
-        familyGear:JSON.parse(localStorage.getItem('camping_familyGear')||'null')||DEFAULT_FAMILY_GEAR,
-        publicFood:JSON.parse(localStorage.getItem('camping_publicFood')||'null')||DEFAULT_PUBLIC_FOOD,
-        publicGear:JSON.parse(localStorage.getItem('camping_publicGear')||'null')||DEFAULT_PUBLIC_GEAR,
-        expenses:JSON.parse(localStorage.getItem('camping_expenses')||'null')||DEFAULT_EXPENSES,
-        itinerary:JSON.parse(localStorage.getItem('camping_itinerary')||'null')||DEFAULT_ITINERARY,
-        mapConfig:JSON.parse(localStorage.getItem('camping_mapConfig')||'null')||{lng:116.67,lat:40.58,name:'北京怀柔白河湾'}
+        name:(safeJsonParse(oldInfo, {})||{}).name||'我的露营',
+        info:safeJsonParse(localStorage.getItem('camping_info'), DEFAULT_INFO),
+        families:safeJsonParse(localStorage.getItem('camping_families'), DEFAULT_FAMILIES),
+        familyGear:safeJsonParse(localStorage.getItem('camping_familyGear'), DEFAULT_FAMILY_GEAR),
+        publicFood:safeJsonParse(localStorage.getItem('camping_publicFood'), DEFAULT_PUBLIC_FOOD),
+        publicGear:safeJsonParse(localStorage.getItem('camping_publicGear'), DEFAULT_PUBLIC_GEAR),
+        expenses:safeJsonParse(localStorage.getItem('camping_expenses'), DEFAULT_EXPENSES),
+        itinerary:safeJsonParse(localStorage.getItem('camping_itinerary'), DEFAULT_ITINERARY),
+        mapConfig:safeJsonParse(localStorage.getItem('camping_mapConfig'), {lng:116.67,lat:40.58,name:'北京怀柔白河湾'})
       };
       savePlans([plan]);
       localStorage.setItem('camping_activePlan','0');
